@@ -1,5 +1,6 @@
 ﻿using Menulo.Configuration;
 using Menulo.Infrastructure;
+using Menulo.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,5 +40,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+//4. Khởi tạo dữ liệu ban đầu
+DbInitializer.Initialize(app.Services);
 
 app.Run();
