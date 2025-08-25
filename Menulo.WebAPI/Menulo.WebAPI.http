@@ -1,0 +1,6 @@
+@Menulo.WebAPI_HostAddress = http://localhost:5263
+
+GET {{Menulo.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
