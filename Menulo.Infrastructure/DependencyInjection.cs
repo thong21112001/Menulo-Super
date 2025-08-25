@@ -1,4 +1,5 @@
-﻿using Menulo.Infrastructure.Identity;
+﻿using Menulo.Application.Common.Interfaces;
+using Menulo.Infrastructure.Identity;
 using Menulo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,9 @@ namespace Menulo.Infrastructure
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+
+            // Đăng ký Unit of Work, sẽ quản lý các repository
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
