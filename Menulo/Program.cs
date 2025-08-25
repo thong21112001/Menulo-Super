@@ -1,7 +1,26 @@
+﻿using Menulo.Configuration;
+using Menulo.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+//1. Đăng ký Razor Pages + các quy ước phân quyền
+builder.Services.AddRazorPages(options =>
+{
+    // Cho phép truy cập trang đăng nhập, đăng ký, privacy
+    options.Conventions.AllowAnonymousToPage("/Identity/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Identity/Account/Register");
+    options.Conventions.AllowAnonymousToPage("/Privacy");
+    options.Conventions.AllowAnonymousToPage("/About/Index");
+    // Áp dụng Authorize cho tất cả các trang còn lại
+    options.Conventions.AuthorizeFolder("/");
+});
+
+//2. Đăng ký chuỗi connect và Cấu hình Identity
+builder.Services.AddInfrastructureServices(builder.Configuration); // gọi từ Menulo.Infrastructure
+
+//3. Cấu hình cookie, seesion, cache
+builder.Services.AddAuthenticationServices();
+
 
 var app = builder.Build();
 
@@ -9,7 +28,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
