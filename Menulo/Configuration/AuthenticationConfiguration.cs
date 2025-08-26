@@ -6,17 +6,13 @@
         {
             //ConfigureApplicationCookie: dùng để làm việc với asp.net core identity
             //AddAuthentication().AddCookie(): dùng để tự cấu hình cookie không liên quan đến identity
-            services.ConfigureApplicationCookie(options =>
-            {
-                // đường dẫn trang login trong scaffold Identity
-                options.LoginPath = "/Identity/Account/Login";
-                // (tuỳ chọn) trang AccessDenied
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-
-                // Thêm cấu hình thời gian ở đây:
-                options.ExpireTimeSpan = TimeSpan.FromHours(8); // đặt 8 tiếng cho chuẩn với người dùng
-                options.SlidingExpiration = true; // Gia hạn khi người dùng hoạt động
-            });
+            //services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
+            //{
+            //    options.LoginPath = "/Identity/Account/Login";
+            //    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            //    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+            //    options.SlidingExpiration = true;
+            //});
 
 
             // Sử dụng cache + Session

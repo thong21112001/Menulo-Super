@@ -8,12 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages(options =>
 {
     // Cho phép truy cập trang đăng nhập, đăng ký, privacy
-    options.Conventions.AllowAnonymousToPage("/Identity/Account/Login");
-    options.Conventions.AllowAnonymousToPage("/Identity/Account/Register");
-    options.Conventions.AllowAnonymousToPage("/Privacy");
-    options.Conventions.AllowAnonymousToPage("/About/Index");
-    // Áp dụng Authorize cho tất cả các trang còn lại
-    options.Conventions.AuthorizeFolder("/");
+    //options.Conventions.AllowAnonymousToPage("/Identity/Account/Login");
+    //options.Conventions.AllowAnonymousToPage("/Identity/Account/Register");
+    //options.Conventions.AllowAnonymousToPage("/Privacy");
+    //options.Conventions.AllowAnonymousToPage("/About/Index");
+    //// Áp dụng Authorize cho tất cả các trang còn lại
+    //options.Conventions.AuthorizeFolder("/");
 });
 
 //2. Đăng ký chuỗi connect và Cấu hình Identity

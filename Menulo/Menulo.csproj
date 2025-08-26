@@ -7,15 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.19">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Menulo.Application\Menulo.Application.csproj" />
     <ProjectReference Include="..\Menulo.Infrastructure\Menulo.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\js\pages\category\" />
   </ItemGroup>
 
 </Project>

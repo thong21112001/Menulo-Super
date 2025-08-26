@@ -1,0 +1,71 @@
+﻿@page
+@model Menulo.Pages.Categories.CreateModel
+
+@{
+    ViewData["Title"] = "Tạo mới";
+}
+
+<h3>Tạo mới danh mục</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="createForm" method="post" onsubmit="disableSubmitButton()">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                @if (User.IsInRole("superadmin"))
+                {
+                    <div class="form-group col-md-4">
+                        <label asp-for="Category.RestaurantId" class="control-label"></label>
+                        <!-- superadmin -->
+                        <select asp-for="Category.RestaurantId"
+                                class="form-control"
+                                asp-items="ViewBag.RestaurantId">
+                        </select>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="form-group col-md-4" style="display:none;">
+                        <label asp-for="Category.RestaurantId" class="control-label"></label>
+                        <input class="form-control" value="@Model.RestaurantName" disabled />
+                    </div>
+                }
+
+                <div class="form-group col-md-4">
+                    <label asp-for="Category.CategoryName" class="control-label"></label>
+                    <input asp-for="Category.CategoryName" class="form-control" maxlength="200" />
+                    <span asp-validation-for="Category.CategoryName" class="text-danger"></span>
+                </div>
+            </div>
+
+
+            <div class="form-group mt-3">
+                <input id="submitBtn" type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}
