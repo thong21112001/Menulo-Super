@@ -1,42 +1,30 @@
 ﻿using Menulo.Application.Common.Interfaces;
 using Menulo.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Collections;
+using System.Collections.Concurrent;
 
 namespace Menulo.Infrastructure.Persistence
 {
-    public class UnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork, IAsyncDisposable, IDisposable
     {
         private readonly AppDbContext _context;
-        private Hashtable _repositories;
+        private readonly ConcurrentDictionary<Type, object> _repositories = new();
         private IDbContextTransaction? _transaction;
 
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
-            _repositories = new Hashtable();
         }
 
 
         public IRepository<TEntity> Repository<TEntity>() where TEntity : class
         {
-            _repositories ??= new Hashtable();
+            var repo = (IRepository<TEntity>)_repositories.GetOrAdd(
+            typeof(TEntity),
+            _ => Activator.CreateInstance(typeof(Repository<>).MakeGenericType(typeof(TEntity)), _context)!
+            );
 
-            var type = typeof(TEntity).Name;
-
-            if (!_repositories.ContainsKey(type))
-            {
-                var repositoryType = typeof(Repository<>);
-                var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(TEntity)), _context);
-                _repositories.Add(type, repositoryInstance);
-            }
-
-            if (_repositories[type] is IRepository<TEntity> repository)
-            {
-                return repository;
-            }
-
-            throw new InvalidOperationException($"Repository for type {type} could not be found or created.");
+            return repo;
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -46,37 +34,46 @@ namespace Menulo.Infrastructure.Persistence
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
+            if (_transaction != null) return;
             _transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         }
 
         public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
+            if (_transaction == null) return;
             try
             {
                 await _context.SaveChangesAsync(cancellationToken);
-                if (_transaction != null)
-                {
-                    await _transaction.CommitAsync(cancellationToken);
-                }
+                await _transaction.CommitAsync(cancellationToken);
             }
             catch
             {
                 await RollbackTransactionAsync(cancellationToken);
                 throw;
             }
+            finally
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
 
         public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
-            if (_transaction != null)
-            {
-                await _transaction.RollbackAsync(cancellationToken);
-            }
+            if (_transaction == null) return;
+            await _transaction.RollbackAsync(cancellationToken);
+            await _transaction.DisposeAsync();
+            _transaction = null;
         }
 
         public void Dispose()
         {
             _context.Dispose();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return _context.DisposeAsync();
         }
     }
 }
