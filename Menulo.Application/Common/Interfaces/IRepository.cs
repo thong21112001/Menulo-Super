@@ -13,5 +13,11 @@
 
         //Cung cấp khả năng truy vấn linh hoạt
         IQueryable<TEntity> GetQueryable();
+
+        // Phương thức để lấy dữ liệu có phân trang và tùy chỉnh hình dạng dữ liệu
+        Task<(IReadOnlyList<TEntity> Items, int Total)> GetPagedAsync(
+            int page, int pageSize,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? shape = null,
+            CancellationToken ct = default);
     }
 }

@@ -1,42 +1,102 @@
 ﻿@page
+@using Menulo.Extensions
 @model Menulo.Pages.Categories.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions {
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
+}
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Danh mục";
+    var isSuperAdmin = User.IsInRole("superadmin");
 }
 
-<h1>Index</h1>
+@section Styles {
+    <link href="~/css/datatablesconfig.css" rel="stylesheet" />
+}
+
+<h3>Danh mục món</h3>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
 </p>
-<table class="table">
+
+<table id="cateTable" class="table table-striped table-bordered nowrap" style="width:100%" data-base-path="/Categories">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Category[0].CategoryName)
+            <th data-type="index" class="stt text-center">#</th>
+            <th data-data="categoryName" data-name="CategoryName">Tên danh mục</th>
+            @if (isSuperAdmin)
+            {
+                <th data-data="restaurantName" data-name="Restaurant.Name">Nhà hàng</th>
+            }
+            <th data-type="actions"
+                data-data="categoryId"
+                class="no-sort text-center"
+                style="min-width: 120px; max-width: 160px;">
+                Thao tác
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category[0].Restaurant)
-            </th>
-            <th></th>
         </tr>
     </thead>
-    <tbody>
-@foreach (var item in Model.Category) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CategoryName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Restaurant.Name)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.CategoryId">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.CategoryId">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.CategoryId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
+    <tbody></tbody>
 </table>
+
+@section Scripts {
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/datatableconfig.js"></script>
+    <script>
+        $(function () {
+            const dt = initDataTable('#cateTable', {
+                ajaxUrl: '/api/categories/datatable'
+            });
+
+            setTimeout(() => dt.columns.adjust().draw(false), 50);// lần đầu
+
+            $(window).on('resize.DT-cateTable', () => dt.columns.adjust()); // khi resize
+
+            $('a[data-bs-toggle="tab"], .modal').on('shown.bs.tab shown.bs.modal',
+                () => dt.columns.adjust());// khi tab/modal hiển thị
+
+            // Xoá handler khi rời trang (tránh đăng ký trùng)
+            $(window).one('unload', () => $(window).off('resize.DT-cateTable'));
+
+            $('#cateTable').on('click', '.btn-delete', function (e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: 'Bạn sẽ không thể hoàn tác hành động này!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Vâng, xóa nó!',
+                    cancelButtonText: 'Hủy bỏ'
+                }).then(r => {
+                    if (!r.isConfirmed) return;
+                    const form = $('<form>', { method: 'POST', action: href });
+                    form.append($('<input>', {
+                        type: 'hidden', name: '__RequestVerificationToken', value: '@GetAntiXsrfRequestToken()'
+                    })).appendTo('body').submit();
+                });
+            });
+        });
+    </script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}

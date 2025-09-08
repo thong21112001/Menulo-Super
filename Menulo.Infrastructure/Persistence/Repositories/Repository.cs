@@ -52,5 +52,18 @@ namespace Menulo.Infrastructure.Persistence.Repositories
         {
             return _db.Set<TEntity>();
         }
+
+        public async Task<(IReadOnlyList<TEntity>, int)> GetPagedAsync(
+            int page, int pageSize,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? shape = null,
+            CancellationToken ct = default)
+        {
+            var query = _db.Set<TEntity>().AsQueryable();
+            if (shape != null) query = shape(query);
+
+            var total = await query.CountAsync(ct);
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+            return (items, total);
+        }
     }
 }

@@ -1,6 +1,9 @@
+using Menulo.Application;
 using Menulo.Configuration;
 using Menulo.Infrastructure;
 using Menulo.Infrastructure.Data;
+using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,32 +19,49 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/");
 });
 
-//2. Đăng ký chuỗi connect và Cấu hình Identity
+//2. DI cho hạ tầng & ứng dụng
 builder.Services.AddInfrastructureServices(builder.Configuration); // gọi từ Menulo.Infrastructure
+builder.Services.AddApplicationServices(); // gọi từ Menulo.Application
 
-//3. Cấu hình cookie, seesion, cache
+//3. Đăng ký Controllers với tùy chọn JSON
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
+//4. Đăng ký CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+//5. Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Menulo API", Version = "v1" });
+});
+
+//6. Cấu hình cookie, seesion, cache
 builder.Services.AddAuthenticationServices();
-
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
+//7. Middleware pipeline (điều chỉnh thứ tự Session)
+app.ConfigureMiddleware(app.Environment);
 
 app.MapRazorPages();
+app.MapControllers();
 
-//4. Khởi tạo dữ liệu ban đầu
+//8. Khởi tạo dữ liệu ban đầu
 DbInitializer.Initialize(app.Services);
 
 app.Run();
