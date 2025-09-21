@@ -1,4 +1,6 @@
 ﻿using Menulo.Application.Common.Interfaces;
+using Menulo.Application.Features.Categories.Dtos;
+using Menulo.Application.Features.Categories.Interfaces;
 using Menulo.Domain.Entities;
 using Menulo.Extensions;
 using Menulo.Infrastructure.Identity;
@@ -12,19 +14,21 @@ namespace Menulo.Pages.Categories
 {
     public class CreateModel : PageModel
     {
-        private readonly IUnitOfWork _uow;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ICategoryService _svc;
+        private readonly IUnitOfWork _uow;
 
         [BindProperty]
-        public Category Category { get; set; } = default!;
+        public CreateCategoryRequest Input { get; set; } = new();
 
         public string? RestaurantName { get; set; }
 
 
-        public CreateModel(IUnitOfWork uow, UserManager<ApplicationUser> userManager)
+        public CreateModel(IUnitOfWork uow, UserManager<ApplicationUser> userManager, ICategoryService svc)
         {
-            _uow = uow;
             _userManager = userManager;
+            _svc = svc;
+            _uow = uow;
         }
 
 
@@ -47,18 +51,12 @@ namespace Menulo.Pages.Categories
                 return authorizationResult;
             }
 
-            if (!string.IsNullOrEmpty(Category.CategoryName))
-            {
-                Category.CategoryName = CleanItemName(Category.CategoryName);
-            }
+            if (!string.IsNullOrWhiteSpace(Input.CategoryName))
+                Input.CategoryName = CleanItemName(Input.CategoryName);
 
             if (!ModelState.IsValid)
             {
-                var loadDataResult = await AuthorizeAndLoadRestaurantData();
-                if (loadDataResult != null)
-                {
-                    return loadDataResult;
-                }
+                await AuthorizeAndLoadRestaurantData();
 
                 var errorMessages = ModelState.Values
                               .SelectMany(modelStateEntry => modelStateEntry.Errors)
@@ -69,11 +67,14 @@ namespace Menulo.Pages.Categories
                 return Page();
             }
 
-            await _uow.Repository<Category>().AddAsync(Category);
-            await _uow.SaveChangesAsync();
+            // Map Request -> DTO (đúng type service cần)
+            var dto = new CreateCategoryDto(
+                CategoryName: Input.CategoryName,
+                RestaurantId: Input.RestaurantId
+            );
 
+            await _svc.CreateAsync(dto);
             TempData.SetSuccess("Tạo mới danh mục thành công!");
-
             return RedirectToPage("./Index");
         }
 
@@ -127,7 +128,7 @@ namespace Menulo.Pages.Categories
             {
                 // Ép gán đúng để tránh client spoofing
                 if (user.RestaurantId.HasValue)
-                    Category.RestaurantId = user.RestaurantId.Value;
+                    Input.RestaurantId = user.RestaurantId.Value;
                 else
                     return Forbid();
             }
