@@ -1,27 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Menulo.Application.Common.Interfaces;
+using Menulo.Application.Features.Categories.Dtos;
+using Menulo.Application.Features.Categories.Interfaces;
+using Menulo.Domain.Entities;
+using Menulo.Extensions;
+using Menulo.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Menulo.Domain.Entities;
-using Menulo.Infrastructure.Persistence;
 
 namespace Menulo.Pages.Categories
 {
     public class EditModel : PageModel
     {
-        private readonly Menulo.Infrastructure.Persistence.AppDbContext _context;
-
-        public EditModel(Menulo.Infrastructure.Persistence.AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ICategoryService _svc;
+        private readonly IUnitOfWork _uow;
 
         [BindProperty]
-        public Category Category { get; set; } = default!;
+        public UpdateCategoryRequest Input { get; set; } = new();
+
+        public string? RestaurantName { get; set; }
+
+
+
+        public EditModel(UserManager<ApplicationUser> userManager, ICategoryService svc, IUnitOfWork uow)
+        {
+            _userManager = userManager;
+            _svc = svc;
+            _uow = uow;
+        }
+
+
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -30,49 +41,131 @@ namespace Menulo.Pages.Categories
                 return NotFound();
             }
 
-            var category =  await _context.Categories.FirstOrDefaultAsync(m => m.CategoryId == id);
-            if (category == null)
+            var authorizationResult = await AuthorizeAndLoadRestaurantData();
+
+            if (authorizationResult != null)
             {
-                return NotFound();
+                return authorizationResult;
             }
-            Category = category;
-           ViewData["RestaurantId"] = new SelectList(_context.Restaurants, "RestaurantId", "Name");
+
+            var cateDb = await _svc.GetByIdAsync(id.Value);
+
+            if (cateDb == null)
+                return NotFound();
+
+            Input = new UpdateCategoryRequest
+            {
+                CategoryId = cateDb.CategoryId,
+                CategoryName = cateDb.CategoryName,
+                RestaurantId = cateDb.RestaurantId
+            };
+
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
+
+
         public async Task<IActionResult> OnPostAsync()
         {
+            var authorizationResult = await AuthorizeAndSetRestaurantId();
+
+            if (authorizationResult != null)
+            {
+                return authorizationResult;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Input.CategoryName))
+                Input.CategoryName = CleanItemName(Input.CategoryName);
+
             if (!ModelState.IsValid)
             {
+                await AuthorizeAndLoadRestaurantData();
+                var errorMessages = ModelState.Values
+                                              .SelectMany(modelStateEntry => modelStateEntry.Errors)
+                                              .Select(error => error.ErrorMessage)
+                                              .ToList();
+
+                TempData.SetError("Lỗi: " + string.Join(" | ", errorMessages));
                 return Page();
             }
 
-            _context.Attach(Category).State = EntityState.Modified;
+            // Map Request -> DTO
+            var dto = new UpdateCategoryDto(
+                CategoryId: Input.CategoryId,
+                CategoryName: Input.CategoryName,
+                RestaurantId: Input.RestaurantId
+            );
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoryExists(Category.CategoryId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            await _svc.UpdateAsync(dto);
+            TempData.SetSuccess("Cập nhật danh mục thành công!");
             return RedirectToPage("./Index");
         }
 
-        private bool CategoryExists(int id)
+
+
+        #region Viết phương thức xử lý
+        private async Task<IActionResult?> AuthorizeAndLoadRestaurantData()
         {
-            return _context.Categories.Any(e => e.CategoryId == id);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var isSuperAdmin = await _userManager.IsInRoleAsync(user, "superadmin");
+
+            if (isSuperAdmin)
+            {
+                ViewData["RestaurantId"] = new SelectList(
+                   await _uow.Repository<Restaurant>().GetAllAsync(), "RestaurantId", "Name");
+            }
+            else if (user.RestaurantId.HasValue)
+            {
+                var rest = await _uow.Repository<Restaurant>().GetQueryable()
+                                    .Where(r => r.RestaurantId == user.RestaurantId.Value)
+                                    .FirstOrDefaultAsync();
+
+                if (rest == null)
+                {
+                    return Forbid();
+                }
+                RestaurantName = rest.Name;
+            }
+            else
+            {
+                return Forbid();
+            }
+
+            return null;
         }
+
+        private async Task<IActionResult?> AuthorizeAndSetRestaurantId()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var isSuperAdmin = await _userManager.IsInRoleAsync(user, "superadmin");
+
+            if (!isSuperAdmin)
+            {
+                if (user.RestaurantId.HasValue)
+                    Input.RestaurantId = user.RestaurantId.Value;
+                else
+                    return Forbid();
+            }
+            return null;
+        }
+
+        private string CleanItemName(string itemName)
+        {
+            if (string.IsNullOrWhiteSpace(itemName))
+                return string.Empty;
+
+            return System.Text.RegularExpressions.Regex.Replace(itemName.Trim(), @"\s+", " ");
+        }
+        #endregion
     }
 }
