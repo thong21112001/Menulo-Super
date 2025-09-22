@@ -53,6 +53,13 @@ builder.Services.AddSwaggerGen(c =>
 //6. Cấu hình cookie, seesion, cache
 builder.Services.AddAuthenticationServices();
 
+// 7.3) (tuỳ chọn) Chính sách role/claim
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdminOnly", p => p.RequireRole("superadmin"));
+    options.AddPolicy("HasRestaurant", p => p.RequireClaim("RestaurantId"));
+});
+
 var app = builder.Build();
 
 //7. Middleware pipeline (điều chỉnh thứ tự Session)

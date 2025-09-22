@@ -9,6 +9,6 @@ namespace Menulo.Application.Features.Categories.Interfaces
         Task<CategoryDto> UpdateAsync(UpdateCategoryDto dto, CancellationToken ct = default);
         Task DeleteAsync(int categoryId, CancellationToken ct = default);
         Task<CategoryDto?> GetByIdAsync(int categoryId, CancellationToken ct = default);
-        IQueryable<Category> GetQueryableCategories(bool isSuperAdmin, int? restaurantId);
+        IQueryable<Category> GetQueryableCategoriesForCurrentUser();
     }
 }

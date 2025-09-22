@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Menulo.Application.Features.Categories.Dtos
 {
@@ -25,5 +26,7 @@ namespace Menulo.Application.Features.Categories.Dtos
     }
 
     public sealed record CategoryResponse(
-        int CategoryId, string CategoryName, int RestaurantId, string? RestaurantName);
+        int CategoryId, string CategoryName, int RestaurantId,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        string? RestaurantName);
 }

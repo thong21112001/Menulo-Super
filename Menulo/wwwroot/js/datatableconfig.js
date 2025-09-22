@@ -37,9 +37,9 @@
                         if (!id) return '';
                         return `
                             <div class="d-flex justify-content-center gap-1">
-                                <a href="${basePath}/Details?id=${id}" class="btn btn-sm btn-info" title="Xem"><i class="bi bi-info-square"></i></a>
                                 <a href="${basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa"><i class="bi bi-pencil-square"></i></a>
-                                <a href="${basePath}/Delete?id=${id}" class="btn btn-sm btn-danger btn-delete" title="Xóa"><i class="bi bi-trash"></i></a>
+
+                                <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem"><i class="bi bi-info-square"></i></a>
                             </div>
                         `;
                     };

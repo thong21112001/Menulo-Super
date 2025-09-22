@@ -45,48 +45,12 @@
     <tbody></tbody>
 </table>
 
+<partial name="_cateDetails" />
+
 @section Scripts {
     <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
     <script src="~/js/datatableconfig.js"></script>
-    <script>
-        $(function () {
-            const dt = initDataTable('#cateTable', {
-                ajaxUrl: '/api/categories/datatable'
-            });
-
-            setTimeout(() => dt.columns.adjust().draw(false), 50);// lần đầu
-
-            $(window).on('resize.DT-cateTable', () => dt.columns.adjust()); // khi resize
-
-            $('a[data-bs-toggle="tab"], .modal').on('shown.bs.tab shown.bs.modal',
-                () => dt.columns.adjust());// khi tab/modal hiển thị
-
-            // Xoá handler khi rời trang (tránh đăng ký trùng)
-            $(window).one('unload', () => $(window).off('resize.DT-cateTable'));
-
-            $('#cateTable').on('click', '.btn-delete', function (e) {
-                e.preventDefault();
-                const href = this.getAttribute('href');
-
-                Swal.fire({
-                    title: 'Bạn có chắc chắn?',
-                    text: 'Bạn sẽ không thể hoàn tác hành động này!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Vâng, xóa nó!',
-                    cancelButtonText: 'Hủy bỏ'
-                }).then(r => {
-                    if (!r.isConfirmed) return;
-                    const form = $('<form>', { method: 'POST', action: href });
-                    form.append($('<input>', {
-                        type: 'hidden', name: '__RequestVerificationToken', value: '@GetAntiXsrfRequestToken()'
-                    })).appendTo('body').submit();
-                });
-            });
-        });
-    </script>
+    <script src="~/js/pages/category/cate-index.js"></script>
     @{
         var alert = TempData.GetAlert();
         if (alert != null)

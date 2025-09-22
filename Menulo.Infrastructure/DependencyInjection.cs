@@ -42,6 +42,9 @@ namespace Menulo.Infrastructure
             // Đăng ký Unit of Work, sẽ quản lý các repository
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
+
             return services;
         }
     }

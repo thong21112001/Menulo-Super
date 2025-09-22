@@ -1,0 +1,40 @@
+﻿<!-- Details Modal -->
+<div class="modal fade" id="cateDetailsModal" tabindex="-1" aria-labelledby="staticBackdropLabel" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết danh mục</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="cate-details-loading" class="text-center py-4 d-none">
+                    <div class="spinner-border" role="status" aria-hidden="true"></div>
+                    <div class="mt-2">Đang tải...</div>
+                </div>
+                <div id="cate-details" class="d-none">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Tên danh mục</dt>
+                        <dd class="col-sm-9" data-field="categoryName"></dd>
+
+                        <dt class="col-sm-3">Nhà hàng</dt>
+                        <dd class="col-sm-9" data-field="restaurantName"></dd>
+                    </dl>
+                </div>
+                <div id="cate-details-empty" class="alert alert-warning d-none">
+                    Không tìm thấy dữ liệu.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="cate-edit-link" class="btn btn-warning d-none">
+                    <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                </a>
+                <button id="btn-delete-in-details" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>

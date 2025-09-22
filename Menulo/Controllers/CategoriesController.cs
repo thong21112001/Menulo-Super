@@ -2,8 +2,7 @@
 using Menulo.Application.Features.Categories.Dtos;
 using Menulo.Application.Features.Categories.Interfaces;
 using Menulo.Domain.Entities;
-using Menulo.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using static Menulo.Application.Common.Contracts.DataTables.DataTablesModels;
@@ -12,31 +11,25 @@ namespace Menulo.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public sealed class CategoriesController : DataTablesControllerBase
     {
         private readonly ICategoryService _service;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-
-        public CategoriesController(ICategoryService service, UserManager<ApplicationUser> userManager, IMapper mapper)
+        public CategoriesController(ICategoryService service, IMapper mapper)
         : base(mapper)
         {
             _service = service;
-            _userManager = userManager;
         }
 
 
-
+        // API 1: Datatables server-side processing
         [HttpPost("datatable")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GetDataTable([FromForm] DataTablesRequest request, CancellationToken ct)
+        public IActionResult GetDataTable([FromForm] DataTablesRequest request, CancellationToken ct)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var isSuperAdmin = user != null && await _userManager.IsInRoleAsync(user, "superadmin");
-            int? restaurantId = isSuperAdmin ? null : user?.RestaurantId;
-
             // Lấy IQueryable từ service
-            IQueryable<Category> source = _service.GetQueryableCategories(isSuperAdmin, restaurantId);
+            IQueryable<Category> source = _service.GetQueryableCategoriesForCurrentUser();
 
             // Xây dựng biểu thức tìm kiếm
             Expression<Func<Category, bool>>? searchPredicate = null;
@@ -44,41 +37,32 @@ namespace Menulo.Controllers
             if (!string.IsNullOrWhiteSpace(searchValue))
             {
                 var kw = searchValue.Trim().ToLower();
-                searchPredicate = c => c.CategoryName.ToLower().Contains(kw)
-                                   || (c.Restaurant != null && c.Restaurant.Name.ToLower().Contains(kw));
+                // Lưu ý: nếu non-superadmin thì cột Restaurant không hiển thị, nhưng search vẫn OK
+                searchPredicate = c =>
+                    c.CategoryName.ToLower().Contains(kw) ||
+                    (c.Restaurant != null && c.Restaurant.Name.ToLower().Contains(kw));
             }
 
             // Gọi phương thức của base để xử lý
+            // Base sẽ map sang CategoryResponse.
+            // Mapping sẽ ẩn RestaurantName với non-superadmin,
+            // hoặc có thể để Service trả DTO đã ẩn sẵn.
             return GetDataTableResult<Category, CategoryResponse>(source, request, searchPredicate);
         }
 
-        // REST CRUD cơ bản (cho Flutter / Web)
+        // API 2: Lấy dữ liệu để hiển thị
         [HttpGet("{id:int}")]
         public async Task<ActionResult<CategoryResponse>> Get(int id, CancellationToken ct)
         {
             var dto = await _service.GetByIdAsync(id, ct);
             return dto is null
                 ? NotFound()
-                : new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.RestaurantName);
+                : Ok(new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.RestaurantName));
         }
 
-        [HttpPost]
-        public async Task<ActionResult<CategoryResponse>> Create([FromBody] CreateCategoryRequest req, CancellationToken ct)
-        {
-            var dto = await _service.CreateAsync(new(req.CategoryName, req.RestaurantId), ct);
-            return CreatedAtAction(nameof(Get), new { id = dto.CategoryId },
-                new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.RestaurantName));
-        }
-
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<CategoryResponse>> Update(int id, [FromBody] UpdateCategoryRequest req, CancellationToken ct)
-        {
-            if (id != req.CategoryId) return BadRequest("Id mismatch");
-            var dto = await _service.UpdateAsync(new(req.CategoryId, req.CategoryName, req.RestaurantId), ct);
-            return new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.RestaurantName);
-        }
-
+        // API 3: Xóa dữ liệu
         [HttpDelete("{id:int}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
             await _service.DeleteAsync(id, ct);
