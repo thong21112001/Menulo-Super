@@ -2,10 +2,10 @@
 {
     public class RestaurantAdmin
     {
-        public string UserId { get; set; } = default!;  // Dùng string để tương thích với Identity
+        public string UserId { get; set; } = default!;
 
-        public int RestaurantId { get; set; }   // Thuộc tính RestaurantId chỉ dành cho tài khoản admin
+        public int? RestaurantId { get; set; }
 
-        public Restaurant? Restaurant { get; set; }  // navigation 1 chiều là đủ
+        public Restaurant? Restaurant { get; set; }
     }
 }

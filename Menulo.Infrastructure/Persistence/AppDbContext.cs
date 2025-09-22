@@ -25,24 +25,36 @@ namespace Menulo.Infrastructure.Persistence
         {
             base.OnModelCreating(b);
 
+            b.HasDefaultSchema("dbo");
+
             // (Tùy chọn) explicit key config cho bảng Identity mặc định
             b.Entity<IdentityUserLogin<string>>().HasKey(p => new { p.LoginProvider, p.ProviderKey });
             b.Entity<IdentityUserRole<string>>().HasKey(p => new { p.UserId, p.RoleId });
             b.Entity<IdentityUserToken<string>>().HasKey(p => new { p.UserId, p.LoginProvider, p.Name });
 
-            // Restaurant
+
+            // =============== Restaurant ===============
             b.Entity<Restaurant>(cfg =>
             {
                 cfg.HasKey(x => x.RestaurantId);
+
                 cfg.Property(x => x.Name).IsRequired().HasMaxLength(200);
                 cfg.Property(x => x.Address).HasMaxLength(400);
                 cfg.Property(x => x.Phone).HasMaxLength(20);
                 cfg.Property(x => x.CreatedAt)
                    .HasColumnType("datetime")
                    .HasDefaultValueSql("(getdate())");
+
+                cfg.Property(x => x.StaticQrImageUrl).HasColumnType("varbinary(max)");
+
+                cfg.HasOne<ApplicationUser>()
+                   .WithMany()
+                   .HasForeignKey(r => r.CreatedBySaleId)
+                   .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // RestaurantAdmin (bảng nối User <-> Restaurant)
+
+            // =============== RestaurantAdmin (bảng nối User <-> Restaurant) ===============
             b.Entity<RestaurantAdmin>(cfg =>
             {
                 cfg.ToTable("RestaurantAdmins");
@@ -60,19 +72,25 @@ namespace Menulo.Infrastructure.Persistence
                    .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Category
+
+            // =============== Category ===============
             b.Entity<Category>(cfg =>
             {
                 cfg.HasKey(x => x.CategoryId);
                 cfg.Property(x => x.CategoryName).HasMaxLength(200);
                 cfg.HasIndex(x => x.RestaurantId);
+
                 cfg.HasOne(x => x.Restaurant)
                    .WithMany(r => r.Categories)
                    .HasForeignKey(x => x.RestaurantId)
                    .OnDelete(DeleteBehavior.ClientSetNull);
+
+                // Tên danh mục không trùng trong cùng nhà hàng
+                cfg.HasIndex(x => new { x.RestaurantId, x.CategoryName }).IsUnique();
             });
 
-            // MenuItem
+
+            // =============== MenuItem ===============
             b.Entity<MenuItem>(cfg =>
             {
                 cfg.HasKey(x => x.ItemId);
@@ -90,16 +108,23 @@ namespace Menulo.Infrastructure.Persistence
                    .WithMany(r => r.MenuItems)
                    .HasForeignKey(x => x.RestaurantId)
                    .OnDelete(DeleteBehavior.ClientSetNull);
+
+                // Global filter: bỏ các món đã soft-delete (vẫn còn trong CSDL)
+                cfg.HasQueryFilter(mi => !mi.IsDeleted);
             });
 
-            // Order
+
+            // =============== Order ===============
             b.Entity<Order>(cfg =>
             {
                 cfg.HasKey(x => x.OrderId);
+
                 cfg.Property(x => x.OrderTime)
                    .HasColumnType("datetime")
                    .HasDefaultValueSql("(getdate())");
+
                 cfg.Property(x => x.Status).HasMaxLength(50);
+                cfg.Property(x => x.CustomerPhone).HasMaxLength(20);
                 cfg.HasIndex(x => x.RestaurantId);
 
                 cfg.HasOne(x => x.Restaurant)
@@ -113,7 +138,8 @@ namespace Menulo.Infrastructure.Persistence
                    .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
-            // OrderItem
+
+            // =============== OrderItem ===============
             b.Entity<OrderItem>(cfg =>
             {
                 cfg.HasKey(x => x.OrderItemId);
@@ -130,7 +156,8 @@ namespace Menulo.Infrastructure.Persistence
                    .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
-            // RestaurantTable
+
+            // =============== RestaurantTable ===============
             b.Entity<RestaurantTable>(cfg =>
             {
                 cfg.HasKey(x => x.TableId);
@@ -142,23 +169,30 @@ namespace Menulo.Infrastructure.Persistence
                    .WithMany(r => r.RestaurantTables)
                    .HasForeignKey(x => x.RestaurantId)
                    .OnDelete(DeleteBehavior.ClientSetNull);
+
+                // Mã bàn duy nhất trong nhà hàng
+                cfg.HasIndex(x => new { x.RestaurantId, x.TableCode }).IsUnique();
             });
 
-            // ItemsTmp
-            b.Entity<ItemsTmp>(entity =>
-            {
-                entity.HasKey(e => e.ItemsTmpId);
-                entity.ToTable("ItemsTmp");
 
-                entity.HasOne(e => e.Item)
-                      .WithMany(mi => mi.ItemsTmps)   // nhớ thêm ICollection<ItemsTmp> vào MenuItem
+            // =============== ItemsTmp (giỏ tạm theo bàn) ===============
+            b.Entity<ItemsTmp>(cfg =>
+            {
+                cfg.HasKey(e => e.ItemsTmpId);
+                cfg.ToTable("ItemsTmp");
+
+                cfg.HasOne(e => e.Item)
+                      .WithMany(mi => mi.ItemsTmps)
                       .HasForeignKey(e => e.ItemId)
                       .OnDelete(DeleteBehavior.ClientSetNull);
 
-                entity.HasOne(e => e.Table)
-                      .WithMany(t => t.ItemsTmps)     // nhớ thêm ICollection<ItemsTmp> vào RestaurantTable
+                cfg.HasOne(e => e.Table)
+                      .WithMany(t => t.ItemsTmps)
                       .HasForeignKey(e => e.TableId)
                       .OnDelete(DeleteBehavior.ClientSetNull);
+
+                // Chống trùng 1 món nhiều dòng trên cùng bàn
+                cfg.HasIndex(e => new { e.TableId, e.ItemId }).IsUnique();
             });
         }
     }

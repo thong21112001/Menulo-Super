@@ -17,6 +17,7 @@ namespace Menulo.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("ProductVersion", "8.0.19")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -35,6 +36,9 @@ namespace Menulo.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
                     b.Property<int>("RestaurantId")
                         .HasColumnType("int");
 
@@ -42,7 +46,10 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("Categories");
+                    b.HasIndex("RestaurantId", "CategoryName")
+                        .IsUnique();
+
+                    b.ToTable("Categories", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.ItemsTmp", b =>
@@ -53,7 +60,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemsTmpId"));
 
-                    b.Property<int>("ItemId")
+                    b.Property<int?>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -66,9 +73,11 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.HasIndex("TableId");
+                    b.HasIndex("TableId", "ItemId")
+                        .IsUnique()
+                        .HasFilter("[ItemId] IS NOT NULL");
 
-                    b.ToTable("ItemsTmp", (string)null);
+                    b.ToTable("ItemsTmp", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.MenuItem", b =>
@@ -88,6 +97,9 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.Property<string>("ImageData")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -109,7 +121,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("MenuItems");
+                    b.ToTable("MenuItems", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.Order", b =>
@@ -120,14 +132,12 @@ namespace Menulo.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
 
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<byte>("Discount")
                         .HasColumnType("tinyint");
-
-                    b.Property<DateTime?>("ExportedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("ExportedTotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsEInvoiceExported")
                         .HasColumnType("bit");
@@ -136,9 +146,6 @@ namespace Menulo.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("PaymentTxnRef")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RestaurantId")
                         .HasColumnType("int");
@@ -157,7 +164,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("TableId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.OrderItem", b =>
@@ -168,7 +175,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
-                    b.Property<int>("ItemId")
+                    b.Property<int?>("ItemId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderId")
@@ -186,7 +193,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.Restaurant", b =>
@@ -197,14 +204,32 @@ namespace Menulo.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RestaurantId"));
 
+                    b.Property<string>("AccountName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AccountNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Address")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("BankCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("CreatedBySaleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DefaultMemoPrefix")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EnableDynamicQr")
+                        .HasColumnType("bit");
 
                     b.Property<byte[]>("LogoImage")
                         .HasColumnType("varbinary(max)");
@@ -218,14 +243,19 @@ namespace Menulo.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<byte[]>("StaticQrImageUrl")
+                        .HasColumnType("varbinary(max)");
+
                     b.HasKey("RestaurantId");
 
-                    b.ToTable("Restaurants");
+                    b.HasIndex("CreatedBySaleId");
+
+                    b.ToTable("Restaurants", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.RestaurantAdmin", b =>
                 {
-                    b.Property<int>("RestaurantId")
+                    b.Property<int?>("RestaurantId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -235,7 +265,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RestaurantAdmins", (string)null);
+                    b.ToTable("RestaurantAdmins", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.RestaurantTable", b =>
@@ -262,7 +292,10 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("RestaurantTables");
+                    b.HasIndex("RestaurantId", "TableCode")
+                        .IsUnique();
+
+                    b.ToTable("RestaurantTables", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Infrastructure.Identity.ApplicationUser", b =>
@@ -334,7 +367,7 @@ namespace Menulo.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("AspNetUsers", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -361,7 +394,7 @@ namespace Menulo.Infrastructure.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("AspNetRoles", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -386,7 +419,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -411,7 +444,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -433,7 +466,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -448,7 +481,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", "dbo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -467,7 +500,7 @@ namespace Menulo.Infrastructure.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", "dbo");
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.Category", b =>
@@ -484,8 +517,7 @@ namespace Menulo.Infrastructure.Migrations
                 {
                     b.HasOne("Menulo.Domain.Entities.MenuItem", "Item")
                         .WithMany("ItemsTmps")
-                        .HasForeignKey("ItemId")
-                        .IsRequired();
+                        .HasForeignKey("ItemId");
 
                     b.HasOne("Menulo.Domain.Entities.RestaurantTable", "Table")
                         .WithMany("ItemsTmps")
@@ -535,8 +567,7 @@ namespace Menulo.Infrastructure.Migrations
                 {
                     b.HasOne("Menulo.Domain.Entities.MenuItem", "Item")
                         .WithMany("OrderItems")
-                        .HasForeignKey("ItemId")
-                        .IsRequired();
+                        .HasForeignKey("ItemId");
 
                     b.HasOne("Menulo.Domain.Entities.Order", "Order")
                         .WithMany("OrderItems")
@@ -546,6 +577,14 @@ namespace Menulo.Infrastructure.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Menulo.Domain.Entities.Restaurant", b =>
+                {
+                    b.HasOne("Menulo.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBySaleId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Menulo.Domain.Entities.RestaurantAdmin", b =>

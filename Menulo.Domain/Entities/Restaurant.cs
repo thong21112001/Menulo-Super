@@ -1,25 +1,34 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Menulo.Domain.Entities
+﻿namespace Menulo.Domain.Entities
 {
     public class Restaurant
     {
         public int RestaurantId { get; set; }
 
-        [Display(Name = "Tên nhà hàng")]
-        [Required(ErrorMessage = "{0} không được để trống")]
         public string Name { get; set; } = null!;
 
-        [Display(Name = "Địa chỉ")]
         public string? Address { get; set; }
 
-        [Display(Name = "Số điện thoại")]
         public string? Phone { get; set; }
 
-        [Display(Name = "Logo nhà hàng")]
         public byte[]? LogoImage { get; set; }
 
         public DateTime? CreatedAt { get; set; }
+
+        public string? CreatedBySaleId { get; set; }
+
+        // ----------------- VietQR fields -----------------
+        public string? BankCode { get; set; }
+
+        public string? AccountNo { get; set; }
+
+        public string? AccountName { get; set; }
+
+        public string? DefaultMemoPrefix { get; set; } = "ORDER-";
+        // -------------------------------------------------------
+
+        public byte[]? StaticQrImageUrl { get; set; }   // mã qr thanh toán
+
+        public bool EnableDynamicQr { get; set; } = false;  // Cờ để bật/tắt tính năng QR động (mặc định là tắt)
 
         public ICollection<Category> Categories { get; set; } = new List<Category>();
 

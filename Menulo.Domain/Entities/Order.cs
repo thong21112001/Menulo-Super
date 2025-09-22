@@ -16,11 +16,7 @@
 
         public bool IsEInvoiceExported { get; set; } = false;
 
-        public decimal? ExportedTotal { get; set; }     // số tiền chốt khi export
-
-        public DateTime? ExportedAt { get; set; }       // thời điểm export
-
-        public string? PaymentTxnRef { get; set; }      //lưu ref giao dịch nếu cần
+        public string? CustomerPhone { get; set; }
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 

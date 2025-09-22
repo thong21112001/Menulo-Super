@@ -54,7 +54,22 @@ namespace Menulo.Infrastructure.Data
                 }
             }
 
-            // 3. Tạo tài khoản SuperAdmin mặc định nếu chưa tồn tại
+            // 3. Tạo role Sale nếu chưa tồn tại
+            var roleCheckSale = await roleManager.RoleExistsAsync("sale");
+            if (!roleCheckSale)
+            {
+                var roleResult = await roleManager.CreateAsync(new IdentityRole("sale"));
+                if (roleResult.Succeeded)
+                {
+                    Console.WriteLine("Role 'sale' created successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating 'sale' role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            // 4. Tạo tài khoản SuperAdmin mặc định nếu chưa tồn tại
             var superAdminUser = await userManager.FindByNameAsync("superadmin"); // Tìm theo Username
             if (superAdminUser == null)
             {
