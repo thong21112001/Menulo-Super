@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Menulo.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250922031814_InitialMenulo")]
+    [Migration("20250922033804_InitialMenulo")]
     partial class InitialMenulo
     {
         /// <inheritdoc />
@@ -256,21 +256,6 @@ namespace Menulo.Infrastructure.Migrations
                     b.ToTable("Restaurants", "dbo");
                 });
 
-            modelBuilder.Entity("Menulo.Domain.Entities.RestaurantAdmin", b =>
-                {
-                    b.Property<int?>("RestaurantId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("RestaurantId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RestaurantAdmins", "dbo");
-                });
-
             modelBuilder.Entity("Menulo.Domain.Entities.RestaurantTable", b =>
                 {
                     b.Property<int>("TableId")
@@ -369,6 +354,10 @@ namespace Menulo.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("RestaurantId")
+                        .IsUnique()
+                        .HasFilter("[RestaurantId] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", "dbo");
                 });
@@ -590,23 +579,6 @@ namespace Menulo.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
-            modelBuilder.Entity("Menulo.Domain.Entities.RestaurantAdmin", b =>
-                {
-                    b.HasOne("Menulo.Domain.Entities.Restaurant", "Restaurant")
-                        .WithMany("Admins")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Menulo.Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
             modelBuilder.Entity("Menulo.Domain.Entities.RestaurantTable", b =>
                 {
                     b.HasOne("Menulo.Domain.Entities.Restaurant", "Restaurant")
@@ -615,6 +587,14 @@ namespace Menulo.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("Menulo.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.HasOne("Menulo.Domain.Entities.Restaurant", null)
+                        .WithOne()
+                        .HasForeignKey("Menulo.Infrastructure.Identity.ApplicationUser", "RestaurantId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -687,8 +667,6 @@ namespace Menulo.Infrastructure.Migrations
 
             modelBuilder.Entity("Menulo.Domain.Entities.Restaurant", b =>
                 {
-                    b.Navigation("Admins");
-
                     b.Navigation("Categories");
 
                     b.Navigation("MenuItems");

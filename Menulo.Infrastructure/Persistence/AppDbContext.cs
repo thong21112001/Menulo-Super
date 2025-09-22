@@ -12,7 +12,6 @@ namespace Menulo.Infrastructure.Persistence
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Restaurant> Restaurants => Set<Restaurant>();
-        public DbSet<RestaurantAdmin> RestaurantAdmins => Set<RestaurantAdmin>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<MenuItem> MenuItems => Set<MenuItem>();
         public DbSet<Order> Orders => Set<Order>();
@@ -54,22 +53,15 @@ namespace Menulo.Infrastructure.Persistence
             });
 
 
-            // =============== RestaurantAdmin (bảng nối User <-> Restaurant) ===============
-            b.Entity<RestaurantAdmin>(cfg =>
+            // =============== ApplicationUser ===============
+            b.Entity<ApplicationUser>(cfg =>
             {
-                cfg.ToTable("RestaurantAdmins");
-                cfg.HasKey(x => new { x.RestaurantId, x.UserId });
+                cfg.HasOne<Restaurant>()                 // không cần nav ở Restaurant
+                   .WithOne()                            // 1:1
+                   .HasForeignKey<ApplicationUser>(u => u.RestaurantId)
+                   .OnDelete(DeleteBehavior.SetNull);    // hoặc Restrict, tùy nghiệp vụ
 
-                cfg.HasOne(x => x.Restaurant)
-                   .WithMany(r => r.Admins)
-                   .HasForeignKey(x => x.RestaurantId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-                // Liên kết sang ApplicationUser qua UserId (không cần navigation ngược)
-                cfg.HasOne<ApplicationUser>()
-                   .WithMany()
-                   .HasForeignKey(x => x.UserId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                cfg.HasIndex(u => u.RestaurantId).IsUnique(); // enforce 1:1 ở mức DB
             });
 
 

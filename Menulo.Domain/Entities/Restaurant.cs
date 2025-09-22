@@ -14,6 +14,7 @@
 
         public DateTime? CreatedAt { get; set; }
 
+        // Ai (UserId) đã tạo nhà hàng này (saler)
         public string? CreatedBySaleId { get; set; }
 
         // ----------------- VietQR fields -----------------
@@ -37,7 +38,5 @@
         public ICollection<Order> Orders { get; set; } = new List<Order>();
 
         public ICollection<RestaurantTable> RestaurantTables { get; set; } = new List<RestaurantTable>();
-
-        public ICollection<RestaurantAdmin> Admins { get; set; } = new List<RestaurantAdmin>();
     }
 }
