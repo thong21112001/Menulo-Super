@@ -76,6 +76,7 @@
 
             setDetailField(detailsModalEl, "categoryName", dto.categoryName);
             setDetailField(detailsModalEl, "restaurantName", dto.restaurantName);
+            setDetailField(detailsModalEl, "priority", dto.priority);
 
             $(SELECTORS.editLink).removeClass("d-none").attr("href", `${STATE.basePath}/Edit?id=${id}`);
 

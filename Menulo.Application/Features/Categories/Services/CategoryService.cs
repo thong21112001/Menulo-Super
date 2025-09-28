@@ -34,7 +34,8 @@ namespace Menulo.Application.Features.Categories.Services
             var entity = new Category
             {
                 CategoryName = dto.CategoryName.Trim(),
-                RestaurantId = restaurantId
+                RestaurantId = restaurantId,
+                Priority = dto.Priority
             };
 
             await _repo.AddAsync(entity, ct);
@@ -68,6 +69,7 @@ namespace Menulo.Application.Features.Categories.Services
                          ?? throw new KeyNotFoundException("Category not found");
 
             entity.CategoryName = dto.CategoryName.Trim();
+            entity.Priority = dto.Priority;
 
             // Khóa tenant: non-superadmin không được đổi RestaurantId
             if (_currentUser.IsSuperAdmin)

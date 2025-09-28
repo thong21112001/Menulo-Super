@@ -50,14 +50,14 @@ namespace Menulo.Controllers
             return GetDataTableResult<Category, CategoryResponse>(source, request, searchPredicate);
         }
 
-        // API 2: Lấy dữ liệu để hiển thị
+        // API 2: Lấy dữ liệu để hiển thị cho view chi tiết và xóa
         [HttpGet("{id:int}")]
         public async Task<ActionResult<CategoryResponse>> Get(int id, CancellationToken ct)
         {
             var dto = await _service.GetByIdAsync(id, ct);
             return dto is null
                 ? NotFound()
-                : Ok(new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.RestaurantName));
+                : Ok(new CategoryResponse(dto.CategoryId, dto.CategoryName, dto.RestaurantId, dto.Priority, dto.RestaurantName));
         }
 
         // API 3: Xóa dữ liệu

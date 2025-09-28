@@ -3,6 +3,7 @@
     public sealed record UpdateCategoryDto(
         int CategoryId,
         string CategoryName,
-        int RestaurantId
+        int RestaurantId,
+        int Priority
     );
 }

@@ -40,6 +40,12 @@
                     <input asp-for="Input.CategoryName" class="form-control" maxlength="200" />
                     <span asp-validation-for="Input.CategoryName" class="text-danger"></span>
                 </div>
+
+                <div class="form-group col-md-4">
+                    <label asp-for="Input.Priority" class="control-label"></label>
+                    <input asp-for="Input.Priority" class="form-control" min="1" max="9999" />
+                    <span asp-validation-for="Input.Priority" class="text-danger"></span>
+                </div>
             </div>
 
 

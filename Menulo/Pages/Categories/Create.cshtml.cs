@@ -70,7 +70,8 @@ namespace Menulo.Pages.Categories
             // Map Request -> DTO (đúng type service cần)
             var dto = new CreateCategoryDto(
                 CategoryName: Input.CategoryName,
-                RestaurantId: Input.RestaurantId
+                RestaurantId: Input.RestaurantId,
+                Priority: Input.Priority
             );
 
             await _svc.CreateAsync(dto);

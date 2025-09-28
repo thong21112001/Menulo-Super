@@ -11,6 +11,9 @@ namespace Menulo.Application.Features.Categories.Dtos
 
         [Display(Name = "Tên nhà hàng")]
         public int RestaurantId { get; set; }
+
+        [Display(Name = "Độ ưu tiên hiển thị")]
+        public int Priority { get; set; } = 1;
     }
 
     public sealed class UpdateCategoryRequest
@@ -23,10 +26,13 @@ namespace Menulo.Application.Features.Categories.Dtos
 
         [Display(Name = "Tên nhà hàng")]
         public int RestaurantId { get; set; }
+
+        [Display(Name = "Độ ưu tiên hiển thị")]
+        public int Priority { get; set; }
     }
 
     public sealed record CategoryResponse(
-        int CategoryId, string CategoryName, int RestaurantId,
+        int CategoryId, string CategoryName, int RestaurantId, int Priority,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         string? RestaurantName);
 }

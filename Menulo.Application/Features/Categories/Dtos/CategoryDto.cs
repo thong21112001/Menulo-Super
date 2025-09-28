@@ -9,6 +9,7 @@
         int CategoryId,
         string CategoryName,
         int RestaurantId,
-        string? RestaurantName
+        string? RestaurantName,
+        int Priority
     );
 }

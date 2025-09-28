@@ -2,6 +2,7 @@
 {
     public sealed record CreateCategoryDto(
         string CategoryName,
-        int RestaurantId
+        int RestaurantId,
+        int Priority = 1
     );
 }

@@ -57,7 +57,8 @@ namespace Menulo.Pages.Categories
             {
                 CategoryId = cateDb.CategoryId,
                 CategoryName = cateDb.CategoryName,
-                RestaurantId = cateDb.RestaurantId
+                RestaurantId = cateDb.RestaurantId,
+                Priority = cateDb.Priority
             };
 
             return Page();
@@ -93,7 +94,8 @@ namespace Menulo.Pages.Categories
             var dto = new UpdateCategoryDto(
                 CategoryId: Input.CategoryId,
                 CategoryName: Input.CategoryName,
-                RestaurantId: Input.RestaurantId
+                RestaurantId: Input.RestaurantId,
+                Priority: Input.Priority
             );
 
             await _svc.UpdateAsync(dto);
