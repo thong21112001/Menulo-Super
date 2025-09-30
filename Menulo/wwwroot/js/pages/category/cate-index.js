@@ -1,6 +1,6 @@
-﻿"use strict";
+﻿(function (window, document, $) {
+    "use strict";
 
-(function (window, document, $) {
     const SELECTORS = Object.freeze({
         table: "#cateTable",
         metaXsrf: 'meta[name="xsrf-token"]',
@@ -37,24 +37,32 @@
 
     // --- DataTables ---
     function initTable() {
-        const tableEl = q(SELECTORS.table);
-        if (!tableEl) return null;
-
-        STATE.basePath = tableEl.dataset.basePath || "/Categories";
-
-        const dt = window.initDataTable(SELECTORS.table, {
+        // ajaxUrl trỏ tới endpoint DataTables của Categories
+        STATE.dt = window.initDataTable(SELECTORS.table, {
             ajaxUrl: "/api/categories/datatable",
+
+            // >>> THÊM: renderer callback cho cột actions
+            renderers: {
+                // key có thể là 'actions' hoặc đúng name/data của cột (vd: 'CategoryId')
+                actions: (id, type, row, meta) => {
+                    if (!id) return "";
+                    return `
+                    <div class="d-flex justify-content-center gap-1">
+                      <a href="${STATE.basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa">
+                        <i class="bi bi-pencil-square"></i>
+                      </a>
+                      <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
+                        <i class="bi bi-info-square"></i>
+                      </a>
+                    </div>`;
+                },
+                // Ví dụ: nếu bạn muốn format Priority riêng
+                // Priority: (value) => `<span class="badge text-bg-secondary">${value ?? ""}</span>`
+            }
         });
-
-        setTimeout(() => dt.columns.adjust().draw(false), 50);
-        $(window).on("resize.DT-cateTable", () => dt.columns.adjust());
-        $('a[data-bs-toggle="tab"], .modal').on("shown.bs.tab shown.bs.modal", () => dt.columns.adjust());
-        $(window).one("unload", () => $(window).off("resize.DT-cateTable"));
-
-        return dt;
     }
 
-    // --- Details ---
+    // --- Phần chi tiết ---
     async function showDetailsById(id) {
         const detailsModal = safeModal(SELECTORS.detailsModal);
         const detailsModalEl = q(SELECTORS.detailsModal);
@@ -89,87 +97,65 @@
         }
     }
 
-    function onClickDetails(e) {
-        e.preventDefault();
-        const id = this.getAttribute("data-id");
-        if (id) showDetailsById(id);
-    }
-
-    // --- Delete from details ---
-    async function onClickDeleteInDetails() {
-        if (!STATE.currentId) return;
-
-        const name = q(`${SELECTORS.details} [data-field="categoryName"]`)?.textContent?.trim() || "";
-        const confirmed = await Swal.fire({
-            icon: "warning",
-            title: "Xóa danh mục?",
-            text: `Bạn chắc chắn muốn xóa ${name}? Hành động này không thể hoàn tác.`,
-            showCancelButton: true,
-            confirmButtonText: "Xóa",
-            cancelButtonText: "Hủy",
-            confirmButtonColor: "#d33",
-        }).then(r => r.isConfirmed);
-
-        if (!confirmed) return;
-
-        const btn = q(SELECTORS.btnDeleteInDetails);
-        const detailsModal = safeModal(SELECTORS.detailsModal);
-
-        btn.disabled = true;
-        const prevHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xóa...';
-
-        try {
-            const res = await fetch(`/api/categories/${STATE.currentId}`, {
+    function onClickDeleteInDetails() {
+        const id = STATE.currentId;
+        if (!id) return;
+        const doDelete = () =>
+            fetch(`/api/categories/${id}`, {
                 method: "DELETE",
-                headers: antiforgeryHeaders(),
+                headers: antiforgeryHeaders()
             });
-            if (!res.ok) {
-                const txt = await res.text();
-                throw new Error(txt || "Delete failed");
-            }
 
-            detailsModal?.hide();
-            const table = $(SELECTORS.table).DataTable();
-            table.ajax.reload(null, false);
-
-            Swal.fire({ icon: "success", title: "Đã xóa danh mục!" });
-            STATE.currentId = null;
-        } catch (err) {
-            console.error(err);
-            Swal.fire({ icon: "error", title: "Xóa thất bại", text: err.message });
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = prevHtml;
-        }
-    }
-
-    // --- Bind & Boot ---
-    function bindEvents() {
-        // Nút xem chi tiết trong bảng
-        $(document).off("click.CateDetails", `${SELECTORS.table} .btn-details`);
-        $(document).on("click.CateDetails", `${SELECTORS.table} .btn-details`, onClickDetails);
-
-        // Nút XÓA trong footer modal chi tiết
-        const btnDel = q(SELECTORS.btnDeleteInDetails);
-        if (btnDel) {
-            btnDel.removeEventListener("click", onClickDeleteInDetails);
-            btnDel.addEventListener("click", onClickDeleteInDetails);
-        }
-    }
-
-    function ready() {
-        if (!window.bootstrap || !bootstrap.Modal) {
-            console.error("[Categories] Bootstrap 5 chưa sẵn sàng.");
+        if (window.Swal) {
+            Swal.fire({
+                icon: "warning",
+                title: "Xoá danh mục?",
+                text: "Hành động này không thể hoàn tác.",
+                showCancelButton: true,
+                confirmButtonText: "Xoá",
+                cancelButtonText: "Huỷ"
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    doDelete()
+                        .then((r) => {
+                            if (!r.ok) throw r;
+                            return;
+                        })
+                        .then(() => {
+                            Swal.fire({ icon: "success", title: "Đã xoá!" });
+                            STATE.dt?.ajax?.reload(null, false);
+                            const modalEl = q(SELECTORS.detailsModal);
+                            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            bsModal.hide();
+                        })
+                        .catch(() => Swal.fire({ icon: "error", title: "Xoá thất bại" }));
+                }
+            });
             return;
         }
-        STATE.dt = initTable();
-        bindEvents();
+
+        // fallback
+        doDelete().then(() => STATE.dt?.ajax?.reload(null, false));
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", ready);
-    } else {
-        ready();
+    function bindEvents() {
+        // delegate click nút xem
+        document.addEventListener("click", (e) => {
+            const btn = e.target.closest(".btn-details");
+            if (!btn) return;
+            e.preventDefault();
+            const id = btn.getAttribute("data-id");
+            showDetailsById(id);
+        });
+
+        // xoá trong modal
+        const btnDel = q(SELECTORS.btnDeleteInDetails);
+        if (btnDel) btnDel.addEventListener("click", onClickDeleteInDetails);
     }
-})(window, document, window.jQuery);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initTable();
+        bindEvents();
+    });
+
+})(window, document, jQuery);

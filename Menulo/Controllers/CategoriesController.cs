@@ -26,7 +26,7 @@ namespace Menulo.Controllers
         // API 1: Datatables server-side processing
         [HttpPost("datatable")]
         [ValidateAntiForgeryToken]
-        public IActionResult GetDataTable([FromForm] DataTablesRequest request, CancellationToken ct)
+        public IActionResult GetDataTable([FromBody] DataTablesRequest request, CancellationToken ct)
         {
             // Lấy IQueryable từ service
             IQueryable<Category> source = _service.GetQueryableCategoriesForCurrentUser();

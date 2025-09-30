@@ -29,14 +29,19 @@
     <thead>
         <tr>
             <th data-type="index" class="stt text-center">#</th>
+
             <th data-data="categoryName" data-name="CategoryName">Tên danh mục</th>
+
             @if (isSuperAdmin)
             {
                 <th data-data="restaurantName" data-name="Restaurant.Name">Nhà hàng</th>
             }
+
             <th data-data="priority" data-name="CategoryPriority">Độ ưu tiên hiển thị</th>
+
             <th data-type="actions"
                 data-data="categoryId"
+                data-name="CategoryId"
                 class="no-sort text-center"
                 style="min-width: 120px; max-width: 160px;">
                 Thao tác

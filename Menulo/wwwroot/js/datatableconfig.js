@@ -1,130 +1,190 @@
-﻿(function ($) {
-    'use strict';
+﻿// datatableconfig.js
+// Khởi tạo DataTable dùng chung + hỗ trợ truyền renderer callback qua options.renderers
 
-    $.fn.DataTable.ext.pager.numbers_length = 5;
+(function (window, document, $) {
+    "use strict";
 
-    function buildColumnsFromThead(tableSelector) {
+    // --- Helpers chung ---
+    const q = (sel, root) => (root || document).querySelector(sel);
+    const getXsrfToken = () => q('meta[name="xsrf-token"]')?.content ?? "";
+    const antiforgeryHeaders = () => ({
+        "Content-Type": "application/json",
+        "RequestVerificationToken": getXsrfToken(),
+    });
+
+    /**
+     * Đọc <thead> để build columns cho DataTables
+     * Ưu tiên render theo thứ tự:
+     *   1) options.renderers[key] (key = name || data || 'actions')
+     *   2) data-render-fn="globalFnName" (hàm global trên window)
+     *   3) default behaviors (index/actions mặc định)
+     */
+    function buildColumnsFromThead(tableSelector, options = {}) {
         const columns = [];
         const $table = $(tableSelector);
-        const basePath = $table.data('base-path');
+        const basePath = $table.data("base-path");
+        const renderers = options.renderers || {};
+        const overridesMap = options.columnsOverrides || {};
+        const $thead = $table.find("thead tr").first();
+        const $ths = $thead.find("th");
 
-        $table.find('thead th').each(function () {
+        $ths.each(function () {
             const $th = $(this);
-            const type = $th.data('type');
-            const data = $th.data('data');
-            const name = $th.data('name') || data;
-            const isNoSort = $th.hasClass('no-sort');
+            const data = $th.data("data");
+            const name = $th.data("name");
+            const type = ($th.data("type") || "").toString().toLowerCase();
+            const orderable = !$th.hasClass("no-sort");
+            const searchable = !$th.hasClass("no-search");
+            const className = $th.attr("class");
 
-            let colDef = {
-                data: data,
-                name: name,
-                orderable: !isNoSort,
-                searchable: true,
-            };
+            /** @type import("datatables.net").ColumnSettings */
+            const colDef = { data, name, orderable, searchable };
+            if (className) colDef.className = className;
 
-            if (type === 'index') {
+            // --- Cột đặc biệt: auto index (#) ---
+            if (type === "index") {
                 colDef.data = null;
                 colDef.orderable = false;
                 colDef.searchable = false;
-                colDef.defaultContent = '';
-            } else if (type === 'actions') {
-                colDef.data = data;
+                colDef.render = function (_data, _type, _row, meta) {
+                    return meta.row + 1 + meta.settings._iDisplayStart;
+                };
+            }
+            // --- Cột đặc biệt: actions (tuỳ biến) ---
+            else if (type === "actions") {
+                colDef.data = data; // thường là Id
                 colDef.orderable = false;
                 colDef.searchable = false;
 
-                if (basePath) {
-                    colDef.render = function (id, type, row) {
-                        if (!id) return '';
-                        return `
-                            <div class="d-flex justify-content-center gap-1">
-                                <a href="${basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                const key = name || data || "actions";
 
-                                <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem"><i class="bi bi-info-square"></i></a>
-                            </div>
-                        `;
-                    };
+                // 1) options.renderers
+                const custom = typeof renderers[key] === "function"
+                    ? renderers[key]
+                    : (typeof renderers.actions === "function" ? renderers.actions : null);
+
+                // 2) data-render-fn="globalFnName"
+                const fnName = $th.data("render-fn");
+                const globalFn = fnName && typeof window[fnName] === "function" ? window[fnName] : null;
+
+                if (custom) {
+                    colDef.render = custom; // dùng callback truyền vào
+                } else if (globalFn) {
+                    colDef.render = globalFn; // fallback dùng hàm global (nếu có)
+                } else {
+                    // 3) default (nhẹ nhàng): nếu có basePath thì cho Edit + View cơ bản
+                    if (basePath) {
+                        colDef.render = function (id) {
+                            if (!id) return "";
+                            return `
+                                <div class="d-flex justify-content-center gap-1">
+                                  <a href="${basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                  </a>
+                                  <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
+                                    <i class="bi bi-info-square"></i>
+                                  </a>
+                                </div>`;
+                        };
+                    }
                 }
             }
+            // --- Cột dữ liệu thường ---
+            else {
+                // giữ nguyên data/name; nếu cần format riêng hãy xài options.columnsOverrides hoặc options.renderers[key]
+                const key = name || data;
+                if (key && typeof renderers[key] === "function") {
+                    colDef.render = renderers[key];
+                }
+            }
+
+            // Cho phép override nhanh 1 số thuộc tính cột theo tên/data
+            const override = overridesMap[name] || overridesMap[data];
+            if (override) Object.assign(colDef, override);
+
             columns.push(colDef);
         });
+
         return columns;
     }
 
-    function autoNumberingDrawCallback(tableApi, indexCol) {
-        const pageInfo = tableApi.page.info();
-        tableApi.column(indexCol, { search: 'applied', order: 'applied' })
-            .nodes()
-            .each((cell, i) => {
-                cell.innerHTML = pageInfo.start + i + 1;
-            });
-    }
+    /**
+     * Khởi tạo DataTable dùng chung
+     * @param {string} tableSelector - selector tới <table>
+     * @param {object} options - cấu hình mở rộng
+     *   - ajaxUrl: string (bắt buộc nếu serverSide)
+     *   - serverSide: boolean (default: true)
+     *   - renderers: { [key: string]: (data, type, row, meta) => string }
+     *   - columnsOverrides: { [key: string]: Partial<ColumnSettings> }
+     *   - language: object (ghi đè i18n)
+     *   - ajaxData: (d) => void (bổ sung param cho request)
+     */
+    function initDataTable(tableSelector, options = {}) {
+        const $table = $(tableSelector);
+        const serverSide = options.serverSide !== false; // mặc định true
+        const ajaxUrl = options.ajaxUrl || $table.data("ajax");
 
-    window.initDataTable = function (tableSelector, options = {}) {
-        const columns = buildColumnsFromThead(tableSelector);
+        const columns = buildColumnsFromThead(tableSelector, options);
 
-        const defaultConfig = {
-            responsive: false,
-            autoWidth: false,
+        /** @type import("datatables.net").Settings */
+        const dtConfig = {
             processing: true,
-            scrollX: true,
-            scrollCollapse: true,
-            dom: `<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>><"row"<"col-sm-12"tr>><"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>`,
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json',
-                paginate: {
-                    first: '<i class="bi bi-chevron-double-left"></i>',
-                    previous: '<i class="bi bi-chevron-left"></i>',
-                    next: '<i class="bi bi-chevron-right"></i>',
-                    last: '<i class="bi bi-chevron-double-right"></i>'
-                }
-            },
-            pagingType: "full_numbers",
-            pageLength: 10,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tất cả"]],
-            order: [],
-            columns: columns,
-            drawCallback: function (settings) {
-                const api = this.api();
-                const indexCol = $(tableSelector).find('thead th[data-type="index"]').index();
-                if (indexCol > -1) {
-                    autoNumberingDrawCallback(api, indexCol);
-                }
-                api.columns.adjust();
-            },
-            initComplete: function () {
-                const api = this.api();
-                // sau khi DOM xong, adjust lại (tránh lúc container chưa đo được width)
-                setTimeout(() => api.columns.adjust().draw(false), 50);
+            serverSide,
+            responsive: true,
+            autoWidth: false,
+            order: [], // để client quyết định từ <th> hoặc tự set
+            columns,
+            language: Object.assign(
+                {
+                    processing: "Đang tải...",
+                    lengthMenu: "Hiển thị _MENU_ dòng",
+                    zeroRecords: "Không có dữ liệu",
+                    info: "Hiển thị từ _START_ đến _END_ dòng. Tổng: _TOTAL_ dòng",
+                    infoEmpty: "Không có dữ liệu",
+                    infoFiltered: "(lọc từ _MAX_ tổng dòng)",
+                    search: "Tìm:",
+                    paginate: { first: "Đầu", last: "Cuối", next: "›", previous: "‹" },
+                },
+                options.language || {}
+            ),
+            drawCallback: function () {
+                // Nếu có cột index, đã render trong colDef
+                // Căn chỉnh lại cột (tránh lệch khi hiển thị trong tab/modal)
+                $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
             }
         };
 
-        if (options.ajaxUrl) {
-            Object.assign(defaultConfig, {
-                serverSide: true,
-                ajax: {
-                    url: options.ajaxUrl,
-                    type: 'POST',
-                    headers: {
-                        'RequestVerificationToken': document.querySelector('meta[name="xsrf-token"]')?.content ?? ''
-                    },
-                    error: xhr => {
-                        if (window.Swal) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Không tải được danh sách',
-                                text: `Lỗi ${xhr?.status || 'không xác định'}`
-                            });
-                        }
+        if (serverSide) {
+            if (!ajaxUrl) {
+                console.error("initDataTable: thiếu ajaxUrl cho serverSide mode.");
+            }
+            dtConfig.ajax = {
+                url: ajaxUrl,
+                type: "POST",
+                contentType: "application/json",
+                dataType: "json",
+                headers: antiforgeryHeaders(),
+                data: function (d) {
+                    // DataTables gửi object phức tạp => stringify
+                    if (typeof options.ajaxData === "function") options.ajaxData(d);
+                    return JSON.stringify(d);
+                },
+                error: function (xhr) {
+                    const msg = xhr?.responseJSON?.message || xhr?.statusText || "Có lỗi khi tải dữ liệu";
+                    if (window.Swal) {
+                        Swal.fire({ icon: "error", title: "Lỗi", text: msg });
+                    } else {
+                        alert(msg);
                     }
                 }
-            });
-            delete options.ajaxUrl;
+            };
         }
 
-        const finalConfig = $.extend(true, {}, defaultConfig, options);
-        finalConfig.destroy = true;
+        const dt = $table.DataTable(dtConfig);
+        return dt;
+    }
 
-        return $(tableSelector).DataTable(finalConfig);
-    };
+    // xuất hàm global
+    window.initDataTable = initDataTable;
 
-})(jQuery);
+})(window, document, jQuery);
