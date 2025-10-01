@@ -1,0 +1,67 @@
+﻿@page
+@model Menulo.Pages.Superadmin.Restaurants.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions {
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
+}
+
+@{
+    ViewData["Title"] = "Danh sách nhà hàng";
+}
+
+@section Styles {
+    <link href="~/css/datatablesconfig.css" rel="stylesheet" />
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<p>
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
+</p>
+
+<table id="resTable" class="table table-striped table-bordered nowrap" style="width:100%" data-base-path="/Superadmin/Restaurants">
+    <thead>
+        <tr>
+            <th data-type="index" class="stt text-center">#</th>
+
+            <th data-data="restaurantName" data-name="RestaurantName">Tên nhà hàng</th>
+
+            <th data-data="restaurantAddress" data-name="RestaurantAddress">Địa chỉ</th>
+
+            <th data-data="restaurantPhone" data-name="RestaurantPhone">Số điện thoại</th>
+
+            <th data-type="actions"
+                data-data="restaurantId"
+                data-name="RestaurantId"
+                class="no-sort text-center"
+                style="min-width: 120px; max-width: 160px;">
+                Thao tác
+            </th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<partial name="_resDetails" />
+
+@section Scripts {
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/datatableconfig.js"></script>
+    @* <script src="~/js/pages/category/cate-index.js"></script> *@
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}
