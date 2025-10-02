@@ -1,0 +1,69 @@
+﻿@page
+@model Menulo.Pages.Superadmin.Restaurants.CreateModel
+
+@{
+    ViewData["Title"] = "Tạo mới";
+}
+
+<h3>Tạo mới nhà hàng</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="createForm" method="post" onsubmit="disableSubmitButton()" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="form-group col-md-3 mb-3">
+                    <label asp-for="Input.Name" class="control-label"></label>
+                    <input asp-for="Input.Name" class="form-control" maxlength="200" />
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-3 mb-3">
+                    <label asp-for="Input.Phone" class="control-label"></label>
+                    <input asp-for="Input.Phone" class="form-control" maxlength="20" />
+                    <span asp-validation-for="Input.Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-3 mb-3">
+                    <label asp-for="Input.Address" class="control-label"></label>
+                    <input asp-for="Input.Address" class="form-control" maxlength="500" />
+                    <span asp-validation-for="Input.Address" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-3 mb-3">
+                    <label asp-for="ImgUpload" class="control-label"></label>
+                    <input type="file" asp-for="ImgUpload" class="form-control" />
+                    <span asp-validation-for="ImgUpload" class="text-danger"></span>
+                </div>
+            </div>
+
+
+            <div class="form-group mt-3">
+                <input id="submitBtn" type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}

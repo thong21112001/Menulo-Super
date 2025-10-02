@@ -8,9 +8,9 @@
     public sealed record RestaurantDto
     (
         int RestaurantId,
-        string RestaurantName,
-        string? RestaurantAddress,
-        string? RestaurantPhone,
-        byte[]? RestaurantLogo
+        string Name,
+        string? Address,
+        string? Phone,
+        byte[]? LogoImage
     );
 }

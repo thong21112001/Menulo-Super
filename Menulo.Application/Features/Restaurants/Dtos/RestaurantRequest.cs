@@ -8,16 +8,16 @@ namespace Menulo.Application.Features.Restaurants.Dtos
         {
             [Display(Name = "Tên nhà hàng")]
             [Required(ErrorMessage = "{0} không được bỏ trống")]
-            public string RestaurantName { get; set; } = null!;
+            public string Name { get; set; } = null!;
 
             [Display(Name = "Địa chỉ")]
-            public string? RestaurantAddress { get; set; }
+            public string? Address { get; set; }
 
             [Display(Name = "Số điện thoại")]
-            public string? RestaurantPhone { get; set; }
+            public string? Phone { get; set; }
 
             [Display(Name = "Logo nhà hàng")]
-            public byte[]? RestaurantLogo { get; set; }
+            public byte[]? LogoImage { get; set; }
 
         }
 
@@ -27,16 +27,16 @@ namespace Menulo.Application.Features.Restaurants.Dtos
 
             [Display(Name = "Tên nhà hàng")]
             [Required(ErrorMessage = "{0} không được bỏ trống")]
-            public string RestaurantName { get; set; } = null!;
+            public string Name { get; set; } = null!;
 
             [Display(Name = "Địa chỉ")]
-            public string? RestaurantAddress { get; set; }
+            public string? Address { get; set; }
 
             [Display(Name = "Số điện thoại")]
-            public string? RestaurantPhone { get; set; }
+            public string? Phone { get; set; }
 
             [Display(Name = "Logo nhà hàng")]
-            public byte[]? RestaurantLogo { get; set; }
+            public byte[]? LogoImage { get; set; }
         }
     }
 }

@@ -28,11 +28,9 @@
         <tr>
             <th data-type="index" class="stt text-center">#</th>
 
-            <th data-data="restaurantName" data-name="RestaurantName">Tên nhà hàng</th>
-
-            <th data-data="restaurantAddress" data-name="RestaurantAddress">Địa chỉ</th>
-
-            <th data-data="restaurantPhone" data-name="RestaurantPhone">Số điện thoại</th>
+            <th data-data="name" data-name="Name">Tên nhà hàng</th>
+            <th data-data="address" data-name="Address">Địa chỉ</th>
+            <th data-data="phone" data-name="Phone">Số điện thoại</th>
 
             <th data-type="actions"
                 data-data="restaurantId"
@@ -51,7 +49,7 @@
 @section Scripts {
     <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
     <script src="~/js/datatableconfig.js"></script>
-    @* <script src="~/js/pages/category/cate-index.js"></script> *@
+    <script src="~/js/pages/restaurant/res-index.js"></script>
     @{
         var alert = TempData.GetAlert();
         if (alert != null)

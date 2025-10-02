@@ -1,4 +1,11 @@
-﻿.col-action {
+﻿/* QUAN TRỌNG: Ngăn không cho nội dung trong cell xuống dòng */
+/* Điều này buộc table phải mở rộng chiều ngang, tạo ra thanh cuộn */
+.table.nowrap th,
+.table.nowrap td {
+    white-space: nowrap;
+}
+
+.col-action {
     min-width: 110px !important;
 }
 
@@ -7,14 +14,12 @@
     align-items: center;
 }
 
-/* Đổi dt-footer thành flex-column */
 .dt-footer {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
 }
 
-/* Mỗi phần wrap thành full-width */
 .dt-info,
 .dt-paginate {
     width: 100%;
@@ -25,24 +30,13 @@
     width: 100% !important;
 }
 
-/* scrollbar chỉ ở body */
-.dataTables_scrollBody {
-    overflow-x: auto !important;
-}
-
-.dataTables_scrollBody table tbody tr:nth-child(even) {
-    background-color: #ffffff !important; /* màu nền cho hàng lẻ */
-}
-
-.dataTables_scrollBody table tbody tr:nth-child(odd) {
-    background-color: #fff !important; /* màu nền cho hàng chẵn */
-}
-
 /* Optional: khi hover thì làm nổi lên */
 .dataTables_scrollBody table tbody tr:hover {
     background-color: #eaeaea !important;
 }
 
+
+/* --- CSS cho các control trên mobile (giữ nguyên) --- */
 @media (max-width: 576px) {
     .dataTables_wrapper .row > div {
         display: inline-block !important;
@@ -50,7 +44,6 @@
         float: none !important;
     }
 
-    /* Override Bootstrap row CSS để length + filter cùng hàng */
     .dataTables_wrapper .row {
         display: flex !important;
         flex-wrap: wrap !important;
@@ -59,7 +52,6 @@
         margin: 0 !important;
     }
 
-    /* Đặt length và filter trên cùng 1 hàng */
     .dataTables_wrapper .dataTables_length {
         float: none !important;
         width: auto !important;
@@ -78,7 +70,6 @@
         padding-left: 0 !important;
     }
 
-    /* Force container của length và filter */
     .dataTables_wrapper .row .col-sm-12.col-md-6:first-child,
     .dataTables_wrapper .row .col-sm-12.col-md-6:last-child {
         width: auto !important;
@@ -89,21 +80,18 @@
         vertical-align: top !important;
     }
 
-    /* Ẩn phần chữ label nhưng giữ select và input */
     .dataTables_wrapper .dataTables_length label,
     .dataTables_wrapper .dataTables_filter label {
         font-size: 0 !important;
         margin: 0 !important;
     }
 
-    /* Giữ lại select + input với kích thước bình thường */
     .dataTables_wrapper .dataTables_length select,
     .dataTables_wrapper .dataTables_filter input {
         font-size: 1rem !important;
         margin: 0 !important;
     }
 
-    /* Info và pagination thành 2 hàng riêng biệt, căn trái */
     .dataTables_wrapper .dataTables_info {
         float: none !important;
         width: 100% !important;
@@ -123,7 +111,6 @@
         display: block !important;
     }
 
-    /* Override Bootstrap columns cho bottom row */
     .dataTables_wrapper .row:last-child .col-sm-12.col-md-5,
     .dataTables_wrapper .row:last-child .col-sm-12.col-md-7 {
         width: 100% !important;

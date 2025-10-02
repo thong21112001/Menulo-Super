@@ -14,10 +14,6 @@
 
     /**
      * Đọc <thead> để build columns cho DataTables
-     * Ưu tiên render theo thứ tự:
-     *   1) options.renderers[key] (key = name || data || 'actions')
-     *   2) data-render-fn="globalFnName" (hàm global trên window)
-     *   3) default behaviors (index/actions mặc định)
      */
     function buildColumnsFromThead(tableSelector, options = {}) {
         const columns = [];
@@ -57,22 +53,18 @@
                 colDef.searchable = false;
 
                 const key = name || data || "actions";
-
-                // 1) options.renderers
                 const custom = typeof renderers[key] === "function"
                     ? renderers[key]
                     : (typeof renderers.actions === "function" ? renderers.actions : null);
 
-                // 2) data-render-fn="globalFnName"
                 const fnName = $th.data("render-fn");
                 const globalFn = fnName && typeof window[fnName] === "function" ? window[fnName] : null;
 
                 if (custom) {
-                    colDef.render = custom; // dùng callback truyền vào
+                    colDef.render = custom;
                 } else if (globalFn) {
-                    colDef.render = globalFn; // fallback dùng hàm global (nếu có)
+                    colDef.render = globalFn;
                 } else {
-                    // 3) default (nhẹ nhàng): nếu có basePath thì cho Edit + View cơ bản
                     if (basePath) {
                         colDef.render = function (id) {
                             if (!id) return "";
@@ -91,14 +83,12 @@
             }
             // --- Cột dữ liệu thường ---
             else {
-                // giữ nguyên data/name; nếu cần format riêng hãy xài options.columnsOverrides hoặc options.renderers[key]
                 const key = name || data;
                 if (key && typeof renderers[key] === "function") {
                     colDef.render = renderers[key];
                 }
             }
 
-            // Cho phép override nhanh 1 số thuộc tính cột theo tên/data
             const override = overridesMap[name] || overridesMap[data];
             if (override) Object.assign(colDef, override);
 
@@ -110,18 +100,10 @@
 
     /**
      * Khởi tạo DataTable dùng chung
-     * @param {string} tableSelector - selector tới <table>
-     * @param {object} options - cấu hình mở rộng
-     *   - ajaxUrl: string (bắt buộc nếu serverSide)
-     *   - serverSide: boolean (default: true)
-     *   - renderers: { [key: string]: (data, type, row, meta) => string }
-     *   - columnsOverrides: { [key: string]: Partial<ColumnSettings> }
-     *   - language: object (ghi đè i18n)
-     *   - ajaxData: (d) => void (bổ sung param cho request)
      */
     function initDataTable(tableSelector, options = {}) {
         const $table = $(tableSelector);
-        const serverSide = options.serverSide !== false; // mặc định true
+        const serverSide = options.serverSide !== false;
         const ajaxUrl = options.ajaxUrl || $table.data("ajax");
 
         const columns = buildColumnsFromThead(tableSelector, options);
@@ -130,9 +112,10 @@
         const dtConfig = {
             processing: true,
             serverSide,
-            responsive: true,
+            responsive: false, // TẮT chế độ responsive mặc định
+            scrollX: true,     // BẬT chế độ cuộn ngang
             autoWidth: false,
-            order: [], // để client quyết định từ <th> hoặc tự set
+            order: [],
             columns,
             language: Object.assign(
                 {
@@ -148,8 +131,6 @@
                 options.language || {}
             ),
             drawCallback: function () {
-                // Nếu có cột index, đã render trong colDef
-                // Căn chỉnh lại cột (tránh lệch khi hiển thị trong tab/modal)
                 $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
             }
         };
@@ -165,7 +146,6 @@
                 dataType: "json",
                 headers: antiforgeryHeaders(),
                 data: function (d) {
-                    // DataTables gửi object phức tạp => stringify
                     if (typeof options.ajaxData === "function") options.ajaxData(d);
                     return JSON.stringify(d);
                 },
@@ -181,10 +161,20 @@
         }
 
         const dt = $table.DataTable(dtConfig);
+
+        // Tự động điều chỉnh lại cột khi resize trình duyệt
+        // Dùng debounce để tránh gọi liên tục, chỉ gọi khi người dùng dừng resize
+        let resizeTimer;
+        $(window).on('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                dt.columns.adjust();
+            }, 250); // delay 250ms
+        });
+
         return dt;
     }
 
-    // xuất hàm global
     window.initDataTable = initDataTable;
 
 })(window, document, jQuery);

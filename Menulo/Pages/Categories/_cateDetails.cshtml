@@ -2,16 +2,23 @@
 <div class="modal fade" id="cateDetailsModal" tabindex="-1" aria-labelledby="staticBackdropLabel" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h5 class="modal-title">Chi tiết danh mục</h5>
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-1"></i>Chi tiết danh mục
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
 
             <div class="modal-body">
+
+                <!-- Loading -->
                 <div id="cate-details-loading" class="text-center py-4 d-none">
                     <div class="spinner-border" role="status" aria-hidden="true"></div>
                     <div class="mt-2">Đang tải...</div>
                 </div>
+
+                <!-- Details -->
                 <div id="cate-details" class="d-none">
                     <dl class="row mb-0">
                         <dt class="col-sm-3">Tên danh mục</dt>
