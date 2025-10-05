@@ -61,8 +61,20 @@ namespace Menulo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            await _service.DeleteAsync(id, ct);
-            return NoContent();
+            try
+            {
+                await _service.DeleteAsync(id, ct);
+                return NoContent(); // 204
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Đã phát sinh dữ liệu → chặn xoá
+                return Conflict(new { code = "RESTAURANT_HAS_DATA", message = ex.Message });
+            }
         }
     }
 }

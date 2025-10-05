@@ -33,14 +33,56 @@ namespace Menulo.Application.Features.Restaurants.Services
             return _mapper.Map<RestaurantDto>(entity);
         }
 
-        public Task<RestaurantDto> UpdateAsync(UpdateRestaurantDto dto, CancellationToken ct = default)
+        public async Task<RestaurantDto> UpdateAsync(UpdateRestaurantDto dto, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var entity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(r => r.RestaurantId == dto.RestaurantId, ct)
+                         ?? throw new KeyNotFoundException("Restaurant not found");
+
+            entity.Name = dto.Name;
+            entity.Address = dto.Address;
+            entity.Phone = dto.Phone;
+            if (dto.LogoImage != null && dto.LogoImage.Length > 0)
+            {
+                entity.LogoImage = dto.LogoImage;
+            }
+
+            await _repo.UpdateAsync(entity, ct);
+            await _uow.SaveChangesAsync(ct);
+            return _mapper.Map<RestaurantDto>(entity);
         }
 
-        public Task DeleteAsync(int restaurantId, CancellationToken ct = default)
+        public async Task DeleteAsync(int restaurantId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var entity = await _repo.GetQueryable()
+                        .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId, ct)
+                         ?? throw new KeyNotFoundException("Restaurant not found");
+
+            // Ktra du lieu da phat sinh chua
+            var cateRepo = _uow.Repository<Category>().GetQueryable();
+            var itemRepo = _uow.Repository<MenuItem>().GetQueryable();
+            var orderRepo = _uow.Repository<Order>().GetQueryable();
+            var tableRepo = _uow.Repository<RestaurantTable>().GetQueryable();
+            var itemsTmpRepo = _uow.Repository<ItemsTmp>().GetQueryable();
+
+            // ItemsTmp không có RestaurantId trực tiếp → kiểm qua bàn
+            var hasTmp = await tableRepo
+                    .Where(t => t.RestaurantId == restaurantId)
+                    .AnyAsync(t => t.ItemsTmps.Any(), ct);
+
+            var hasData =
+                       await cateRepo.AnyAsync(x => x.RestaurantId == restaurantId, ct)
+                    || await itemRepo.AnyAsync(x => x.RestaurantId == restaurantId, ct)
+                    || await orderRepo.AnyAsync(x => x.RestaurantId == restaurantId, ct)
+                    || await tableRepo.AnyAsync(x => x.RestaurantId == restaurantId, ct)
+                    || hasTmp;
+
+            if (hasData)
+                throw new InvalidOperationException("Nhà hàng đã phát sinh dữ liệu nên không thể xoá.");
+
+            // Cho xoá khi sạch dữ liệu
+            await _repo.DeleteAsync(entity, ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         public async Task<RestaurantDetailsDto?> GetByIdAsync(int restaurantId, CancellationToken ct = default)

@@ -142,11 +142,27 @@
                     method: "DELETE",
                     headers: antiforgeryHeaders()
                 });
-                if (!r.ok) throw r;
 
-                if (window.Swal) await Swal.fire({ icon: "success", title: "Đã xoá!" });
-                STATE.dt?.ajax?.reload(null, false);
-                bootstrap.Modal.getOrCreateInstance(q(SELECTORS.detailsModal)).hide();
+                if (r.status === 204) {
+                    if (window.Swal) await Swal.fire({ icon: "success", title: "Đã xoá!" });
+                    STATE.dt?.ajax?.reload(null, false);
+                    bootstrap.Modal.getOrCreateInstance(q(SELECTORS.detailsModal)).hide();
+                    return;
+                }
+
+                if (r.status === 409) {
+                    let msg = "Nhà hàng đã phát sinh dữ liệu nên không thể xoá.";
+                    try {
+                        const json = await r.json();
+                        if (json?.message) msg = json.message;
+                    } catch { }
+                    if (window.Swal) await Swal.fire({ icon: "info", title: "Không thể xoá", text: msg });
+                    else alert(msg);
+                    return;
+                }
+
+                // Lỗi khác
+                throw r;
             } catch {
                 if (window.Swal) Swal.fire({ icon: "error", title: "Xoá thất bại" });
                 else alert("Xoá thất bại");
@@ -158,7 +174,7 @@
         if (window.Swal) {
             const { isConfirmed } = await Swal.fire({
                 icon: "warning",
-                title: "Xoá nhà hàng?",
+                title: "Xoá nhà hàng này?",
                 text: "Hành động này không thể hoàn tác.",
                 showCancelButton: true,
                 confirmButtonText: "Xoá",
