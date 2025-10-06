@@ -14,7 +14,6 @@
 
     const STATE = {
         dt: null,
-        basePath: "/Categories",
         currentId: null,
     };
 
@@ -48,7 +47,7 @@
                     if (!id) return "";
                     return `
                     <div class="d-flex justify-content-center gap-1">
-                      <a href="${STATE.basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa">
+                      <a href="ds-danh-muc/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
                         <i class="bi bi-pencil-square"></i>
                       </a>
                       <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
@@ -86,7 +85,7 @@
             setDetailField(detailsModalEl, "restaurantName", dto.restaurantName);
             setDetailField(detailsModalEl, "priority", dto.priority);
 
-            $(SELECTORS.editLink).removeClass("d-none").attr("href", `${STATE.basePath}/Edit?id=${id}`);
+            $(SELECTORS.editLink).removeClass("d-none").attr("href", `ds-danh-muc/${id}/chinh-sua`);
 
             $(SELECTORS.loading).addClass("d-none");
             $(SELECTORS.details).removeClass("d-none");

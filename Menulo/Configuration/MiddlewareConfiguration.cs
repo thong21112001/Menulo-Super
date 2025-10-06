@@ -1,4 +1,6 @@
-﻿namespace Menulo.Configuration
+﻿using Asp.Versioning.ApiExplorer;
+
+namespace Menulo.Configuration
 {
     public static class MiddlewareConfiguration
     {
@@ -7,11 +9,20 @@
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                // Swagger + UI theo từng API version
                 app.UseSwagger();
-                app.UseSwaggerUI(c =>
+
+                // Lấy provider từ DI đúng cách
+                var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
+
+                app.UseSwaggerUI(o =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Menulo API v1");
-                    c.RoutePrefix = "swagger";
+                    foreach (var d in provider.ApiVersionDescriptions)
+                    {
+                        o.SwaggerEndpoint($"/swagger/{d.GroupName}/swagger.json",
+                                          $"Menulo API {d.GroupName.ToUpper()}");
+                    }
                 });
             }
             else
@@ -22,16 +33,18 @@
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
             app.UseRouting();
 
+            // CORS nên đặt sau UseRouting, trước AuthZ
             app.UseCors("AllowSpecificOrigin");
 
-            // Middleware để sử dụng Session
+            // (nếu có dùng Session) đảm bảo đã AddSession() ở Program/Startup
             app.UseSession();
 
-            // Middleware xác thực và phân quyền
-            app.UseAuthentication(); // Xác thực
-            app.UseAuthorization();  // Phân quyền
+            // AuthN/AuthZ
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             return app;
         }

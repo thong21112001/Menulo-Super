@@ -16,7 +16,6 @@
 
     const STATE = {
         dt: null,
-        basePath: "",   // <<< Razor Pages Edit page
         currentId: null
     };
 
@@ -49,23 +48,14 @@
 
     // --- DataTables ---
     function initTable() {
-        // THAY ĐỔI: Lấy basePath từ thuộc tính data- của table
-        const tableEl = q(SELECTORS.table);
-        if (!tableEl) {
-            console.error("Table element not found!");
-            return;
-        }
-        STATE.basePath = tableEl.getAttribute("data-base-path") || "/Restaurants";
-
-        // YÊU CẦU: bạn đã có window.initDataTable(config) chung
         STATE.dt = window.initDataTable(SELECTORS.table, {
-            ajaxUrl: "/api/restaurants/datatable",  // <<< endpoint Restaurant
+            ajaxUrl: "/api/restaurants/datatable",  // <<< endpoint Restaurant API
             renderers: {
                 actions: (id, type, row, meta) => {
                     if (!id) return "";
                     return `
                       <div class="d-flex justify-content-center gap-1">
-                        <a href="${STATE.basePath}/Edit?id=${id}" class="btn btn-sm btn-primary" title="Sửa">
+                        <a href="/sa/ds-nha-hang/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
                           <i class="bi bi-pencil-square"></i>
                         </a>
                         <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
@@ -73,7 +63,6 @@
                         </a>
                       </div>`;
                 }
-                // Không render logo ở list → payload nhẹ hơn
             }
         });
     }
@@ -118,7 +107,7 @@
             }
 
             // Footer
-            $(SELECTORS.editLink).removeClass("d-none").attr("href", `${STATE.basePath}/Edit?id=${id}`);
+            $(SELECTORS.editLink).removeClass("d-none").attr("href", `/sa/ds-nha-hang/${id}/chinh-sua`);
             $(SELECTORS.btnDeleteInDetails).removeClass("d-none").attr("data-id", String(id));
             $(SELECTORS.loading).addClass("d-none");
             $(SELECTORS.details).removeClass("d-none");
