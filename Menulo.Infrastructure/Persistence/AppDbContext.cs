@@ -44,7 +44,8 @@ namespace Menulo.Infrastructure.Persistence
                    .HasColumnType("datetime")
                    .HasDefaultValueSql("(getdate())");
 
-                cfg.Property(x => x.StaticQrImageUrl).HasColumnType("varbinary(max)");
+                cfg.Property(x => x.LogoUrl).HasMaxLength(500);
+                cfg.Property(x => x.StaticQrImageUrl).HasMaxLength(500);
 
                 cfg.HasOne<ApplicationUser>()
                    .WithMany()

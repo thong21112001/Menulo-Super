@@ -5,6 +5,6 @@
         string Name,
         string? Address,
         string? Phone,
-        byte[]? LogoImage
+        string? LogoUrl
     );
 }

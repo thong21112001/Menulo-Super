@@ -35,16 +35,19 @@
                 </div>
 
                 <div class="form-group col-md-3 mb-3">
-                    <label class="control-label">Tải lên logo mới</label>
-                    <input type="file" asp-for="ImgUpload" class="form-control" />
+                    <label class="control-label">Tải lên logo mới (jpg/png)</label>
+                    <input type="file" asp-for="ImgUpload" class="form-control" accept=".jpg,.jpeg,.png" />
+                    <span class="form-text text-muted">Để trống nếu muốn giữ logo hiện tại.</span>
                     <span asp-validation-for="ImgUpload" class="text-danger"></span>
                 </div>
             </div>
 
-            @if (Model.Input.LogoImage != null)
+            @if (!string.IsNullOrWhiteSpace(Model.CurrentLogoUrl))
             {
-                <span class="form-text text-muted">Logo hiện tại:</span>
-                <img src="@Model.Input.LogoImage" width="150" class="img-thumbnail mt-2" />
+                <div class="mb-2">
+                    <span class="form-text text-muted">Logo hiện tại:</span><br />
+                    <img src="@Model.CurrentLogoUrl" width="150" class="img-thumbnail mt-2" />
+                </div>
             }
 
             <div class="form-group mt-3">

@@ -1,4 +1,5 @@
 ﻿using Menulo.Application.Common.Interfaces;
+using Menulo.Application.Common.Options;
 using Menulo.Infrastructure.External.Storage;
 using Menulo.Infrastructure.Identity;
 using Menulo.Infrastructure.Persistence;
@@ -46,14 +47,19 @@ namespace Menulo.Infrastructure
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
 
-            // Bind options từ section "GoogleDrive"
-            services.AddOptions<GoogleDriveOptions>()
-                    .Bind(config.GetSection("GoogleDrive"))
-                    .Validate(o => !string.IsNullOrWhiteSpace(o.ServiceAccountJsonPath)
-                                && !string.IsNullOrWhiteSpace(o.RootFolderId),
-                              "GoogleDrive options are missing");
 
-            services.AddSingleton<IImageStorageService, GoogleDriveImageStorageService>();
+            // Bind options từ section "GoogleOAuth"
+            services.AddOptions<GoogleOAuthOptions>()
+                    .Bind(config.GetSection("GoogleOAuth"))
+                    .Validate(o => !string.IsNullOrWhiteSpace(o.ClientId)
+                                && !string.IsNullOrWhiteSpace(o.ClientSecret)
+                                && !string.IsNullOrWhiteSpace(o.RedirectUri)
+                                && !string.IsNullOrWhiteSpace(o.ApplicationName),
+                              "GoogleOAuth options are missing");
+
+            services.AddSingleton<ITokenStore, FileTokenStore>();
+
+            services.AddSingleton<IImageStorageService, GoogleDriveOAuthImageStorageService>();
 
             return services;
         }

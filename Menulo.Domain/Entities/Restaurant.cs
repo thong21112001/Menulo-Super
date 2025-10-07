@@ -10,7 +10,7 @@
 
         public string? Phone { get; set; }
 
-        public byte[]? LogoImage { get; set; }
+        public string? LogoUrl { get; set; }    // URL ảnh logo (Drive)
 
         public DateTime? CreatedAt { get; set; }
 
@@ -27,7 +27,7 @@
         public string? DefaultMemoPrefix { get; set; } = "ORDER-";
         // -------------------------------------------------------
 
-        public byte[]? StaticQrImageUrl { get; set; }   // mã qr thanh toán
+        public string? StaticQrImageUrl { get; set; }   // mã qr thanh toán
 
         public bool EnableDynamicQr { get; set; } = false;  // Cờ để bật/tắt tính năng QR động (mặc định là tắt)
 

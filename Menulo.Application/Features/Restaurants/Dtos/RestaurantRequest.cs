@@ -17,7 +17,7 @@ namespace Menulo.Application.Features.Restaurants.Dtos
             public string? Phone { get; set; }
 
             [Display(Name = "Logo nhà hàng")]
-            public byte[]? LogoImage { get; set; }
+            public string? LogoUrl { get; set; }
 
         }
 
@@ -36,7 +36,7 @@ namespace Menulo.Application.Features.Restaurants.Dtos
             public string? Phone { get; set; }
 
             [Display(Name = "Logo nhà hàng")]
-            public string? LogoImage { get; set; }
+            public string? LogoUrl { get; set; }
         }
     }
 }

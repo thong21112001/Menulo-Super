@@ -16,10 +16,7 @@ namespace Menulo.Application.Common.Mappings
 
             // Details API
             CreateMap<Restaurant, RestaurantDetailsDto>()
-                .ForCtorParam("LogoUrl", opt => opt.MapFrom(src =>
-                    src.LogoImage != null && src.LogoImage.Length > 0
-                        ? $"data:image/png;base64,{Convert.ToBase64String(src.LogoImage)}"
-                        : null))
+                .ForCtorParam("LogoUrl", opt => opt.MapFrom(src => src.LogoUrl))
                 .ForCtorParam("CreatedAt", opt => opt.MapFrom(src => (DateTime?)src.CreatedAt));
 
 

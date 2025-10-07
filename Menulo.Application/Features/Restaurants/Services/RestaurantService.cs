@@ -12,18 +12,17 @@ namespace Menulo.Application.Features.Restaurants.Services
         private readonly IUnitOfWork _uow;
         private readonly IRepository<Restaurant> _repo;
         private readonly IMapper _mapper;
-        private readonly ICurrentUser _currentUser;
+        private readonly IImageStorageService _images;
 
 
         public RestaurantService(IUnitOfWork uow,
-            IMapper mapper, ICurrentUser currentUser)
+            IMapper mapper, IImageStorageService images)
         {
             _uow = uow;
             _repo = _uow.Repository<Restaurant>();
             _mapper = mapper;
-            _currentUser = currentUser;
+            _images = images;
         }
-
 
         public async Task<RestaurantDto> CreateAsync(CreateRestaurantDto dto, CancellationToken ct = default)
         {
@@ -42,14 +41,99 @@ namespace Menulo.Application.Features.Restaurants.Services
             entity.Name = dto.Name;
             entity.Address = dto.Address;
             entity.Phone = dto.Phone;
-            if (dto.LogoImage != null && dto.LogoImage.Length > 0)
+            if (!string.IsNullOrWhiteSpace(dto.LogoUrl))
             {
-                entity.LogoImage = dto.LogoImage;
+                entity.LogoUrl = dto.LogoUrl;
             }
 
             await _repo.UpdateAsync(entity, ct);
             await _uow.SaveChangesAsync(ct);
             return _mapper.Map<RestaurantDto>(entity);
+        }
+
+        public async Task<RestaurantDto> CreateWithLogoAsync(
+            string name, string? address, string? phone,
+            Stream logoStream, string logoFileName, string contentType,
+            CancellationToken ct = default)
+        {
+            string? uploadedUrl = null;
+
+            await _uow.BeginTransactionAsync(ct);
+            try
+            {
+                // 1) Tạo DB trước
+                var created = await CreateAsync(new CreateRestaurantDto(name, address, phone, null), ct);
+
+                // 2) Upload Drive
+                uploadedUrl = await _images.UploadAsync(
+                    logoStream, logoFileName, contentType,
+                    restaurantId: created.RestaurantId,
+                    restaurantName: created.Name,
+                    logicalName: "logo");
+
+                // 3) Cập nhật LogoUrl
+                await UpdateAsync(new UpdateRestaurantDto(
+                    created.RestaurantId, created.Name, created.Address, created.Phone, uploadedUrl
+                ), ct);
+                await _uow.SaveChangesAsync(ct);
+
+                await _uow.CommitTransactionAsync(ct);
+
+                // 4) Lấy lại entity rồi map -> RestaurantDto
+                var entity = await _repo.GetByIdAsync(created.RestaurantId); // entity domain
+                return _mapper.Map<RestaurantDto>(entity!);
+            }
+            catch
+            {
+                // bẫy: nếu đã upload xong mà DB rollback → xóa ảnh để tránh orphan
+                if (!string.IsNullOrWhiteSpace(uploadedUrl))
+                {
+                    try { await _images.DeleteByPublicUrlAsync(uploadedUrl); } catch { /* log nếu cần */ }
+                }
+                await _uow.RollbackTransactionAsync(ct);
+                throw;
+            }
+        }
+
+        public async Task<RestaurantDto> ReplaceLogoAsync(
+            int restaurantId, string restaurantName,
+            Stream newLogoStream, string newLogoFileName, string contentType,
+            CancellationToken ct = default)
+        {
+            var current = await _repo.GetByIdAsync(restaurantId)
+                 ?? throw new KeyNotFoundException("Restaurant not found.");
+
+            // 1) Upload ảnh mới
+            var newUrl = await _images.UploadAsync(
+                newLogoStream, newLogoFileName, contentType,
+                restaurantId, restaurantName, "logo");
+
+            await _uow.BeginTransactionAsync(ct);
+            try
+            {
+                // 2) Update DB trong TX
+                await UpdateAsync(new UpdateRestaurantDto(
+                    restaurantId, current.Name, current.Address, current.Phone, newUrl
+                ), ct);
+
+                await _uow.CommitTransactionAsync(ct);
+            }
+            catch
+            {
+                // Commit thất bại → xoá ảnh mới để không orphan
+                try { await _images.DeleteByPublicUrlAsync(newUrl); } catch { /* log if needed */ }
+                await _uow.RollbackTransactionAsync(ct);
+                throw;
+            }
+
+            // 3) Sau khi commit thành công, xoá ảnh cũ (best-effort)
+            if (!string.IsNullOrWhiteSpace(current.LogoUrl))
+            {
+                try { await _images.DeleteByPublicUrlAsync(current.LogoUrl); } catch { /* log nếu cần */ }
+            }
+
+            var entity = await _repo.GetByIdAsync(restaurantId);
+            return _mapper.Map<RestaurantDto>(entity!);
         }
 
         public async Task DeleteAsync(int restaurantId, CancellationToken ct = default)

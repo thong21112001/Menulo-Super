@@ -1,7 +1,6 @@
 ﻿using Menulo.Application.Features.Restaurants.Dtos;
 using Menulo.Application.Features.Restaurants.Interfaces;
 using Menulo.Extensions;
-using Menulo.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,7 +9,7 @@ namespace Menulo.Pages.Superadmin.Restaurants
     public class EditModel : PageModel
     {
         private readonly IRestaurantService _svc;
-        private readonly IWebHostEnvironment _environment;
+        private static readonly string[] AllowedExts = [".jpg", ".jpeg", ".png"];
 
         [BindProperty]
         public RestaurantRequest.Update Input { get; set; } = new();
@@ -18,11 +17,13 @@ namespace Menulo.Pages.Superadmin.Restaurants
         [BindProperty]
         public IFormFile? ImgUpload { get; set; }
 
+        // Chỉ để hiển thị logo hiện tại
+        public string? CurrentLogoUrl { get; private set; }
 
-        public EditModel(IRestaurantService svc, IWebHostEnvironment environment)
+
+        public EditModel(IRestaurantService svc)
         {
             _svc = svc;
-            _environment = environment;
         }
 
 
@@ -45,15 +46,16 @@ namespace Menulo.Pages.Superadmin.Restaurants
                 Name = restaurantDb.Name,
                 Address = restaurantDb.Address,
                 Phone = restaurantDb.Phone,
-                LogoImage = restaurantDb.LogoUrl
             };
+
+            CurrentLogoUrl = restaurantDb.LogoUrl;
 
             return Page();
         }
 
 
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(CancellationToken ct)
         {
             if (!ModelState.IsValid)
             {
@@ -66,30 +68,45 @@ namespace Menulo.Pages.Superadmin.Restaurants
                 return Page();
             }
 
-            byte[]? imageData = null;
+            // Lấy entity hiện tại để có CurrentLogoUrl (nếu cần hiển thị lại khi lỗi)
+            var current = await _svc.GetByIdAsync(Input.RestaurantId);
+            if (current is null) return NotFound();
+            CurrentLogoUrl = current.LogoUrl;
 
-            if (ImgUpload != null && ImgUpload.Length > 0)
+            // Nếu người dùng upload logo mới
+            if (ImgUpload is { Length: > 0 })
             {
-                // Trường hợp 1: có upload mới
-                imageData = await UploadImageHelper.ProcessUploadAsync(ImgUpload, ModelState);
-                if (imageData == null) return Page();
-            }
-            else
-            {
-                // giữ nguyên logo cũ
-                imageData = null;
+                var ext = Path.GetExtension(ImgUpload.FileName).ToLowerInvariant();
+                if (!AllowedExts.Contains(ext))
+                {
+                    ModelState.AddModelError(nameof(ImgUpload), "Chỉ chấp nhận .jpg, .jpeg, .png.");
+                    return Page();
+                }
+
+                // Transactional trong service:
+                // Upload ảnh mới -> cập nhật DB -> commit -> xóa ảnh cũ (sau commit)
+                await using var s = ImgUpload.OpenReadStream();
+                await _svc.ReplaceLogoAsync(
+                    restaurantId: Input.RestaurantId,
+                    restaurantName: Input.Name,               // dùng cho slug folder Drive
+                    newLogoStream: s,
+                    newLogoFileName: ImgUpload.FileName,
+                    contentType: ImgUpload.ContentType ?? "image/jpeg",
+                    ct: ct
+                );
             }
 
-            // Map Request -> DTO
+            // Cập nhật các trường text (Name/Address/Phone).
+            // LogoUrl để null để service hiểu là "không đụng" (giữ nguyên).
             var dto = new UpdateRestaurantDto(
                 RestaurantId: Input.RestaurantId,
                 Name: Input.Name,
                 Address: Input.Address,
                 Phone: Input.Phone,
-                LogoImage: imageData
+                LogoUrl: null
             );
+            await _svc.UpdateAsync(dto, ct);
 
-            await _svc.UpdateAsync(dto);
             TempData.SetSuccess("Cập nhật nhà hàng thành công!");
             return RedirectToPage("./Index");
         }

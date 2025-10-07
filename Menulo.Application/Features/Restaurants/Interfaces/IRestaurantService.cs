@@ -10,5 +10,15 @@ namespace Menulo.Application.Features.Restaurants.Interfaces
         Task DeleteAsync(int restaurantId, CancellationToken ct = default);
         Task<RestaurantDetailsDto?> GetByIdAsync(int restaurantId, CancellationToken ct = default);
         IQueryable<Restaurant> GetQueryableRestaurantsForCurrentUser();
+
+        Task<RestaurantDto> CreateWithLogoAsync(
+        string name, string? address, string? phone,
+        Stream logoStream, string logoFileName, string contentType,
+        CancellationToken ct = default);
+
+        Task<RestaurantDto> ReplaceLogoAsync(
+            int restaurantId, string restaurantName,
+            Stream newLogoStream, string newLogoFileName, string contentType,
+            CancellationToken ct = default);
     }
 }

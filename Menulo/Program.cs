@@ -30,14 +30,6 @@ builder.Services.AddRazorPages(options =>
 
 builder.Services.AddMenuloUiRoutes();
 
-//Chuẩn hoá ServiceAccountJsonPath -> absolute trước khi bind vào Infrastructure
-var rawPath = builder.Configuration["GoogleDrive:ServiceAccountJsonPath"];
-if (!string.IsNullOrWhiteSpace(rawPath) && !Path.IsPathRooted(rawPath))
-{
-    var absolute = Path.Combine(builder.Environment.ContentRootPath, rawPath);
-    builder.Configuration["GoogleDrive:ServiceAccountJsonPath"] = absolute;
-}
-
 //2. DI cho hạ tầng & ứng dụng
 builder.Services.AddInfrastructureServices(builder.Configuration); // gọi từ Menulo.Infrastructure
 builder.Services.AddApplicationServices(); // gọi từ Menulo.Application
