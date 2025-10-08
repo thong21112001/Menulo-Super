@@ -1,0 +1,72 @@
+﻿@page
+@using Menulo.Extensions
+@model Menulo.Pages.RestaurantTables.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions{
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
+}
+
+@{
+    ViewData["Title"] = "Danh sách bàn ăn";
+    var isSuperAdmin = User.IsInRole("superadmin");
+}
+
+@section Styles {
+    <link href="~/css/datatablesconfig.css" rel="stylesheet" />
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<p>
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
+</p>
+
+<table id="listTable" class="table table-striped table-bordered nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th data-type="index" class="stt text-center">#</th>
+
+            <th data-data="categoryName" data-name="CategoryName">Tên danh mục</th>
+
+            @if (isSuperAdmin)
+            {
+                <th data-data="restaurantName" data-name="Restaurant.Name">Nhà hàng</th>
+            }
+
+            <th data-data="priority" data-name="CategoryPriority">Độ ưu tiên hiển thị</th>
+
+            <th data-type="actions"
+                data-data="categoryId"
+                data-name="CategoryId"
+                class="no-sort text-center"
+                style="min-width: 120px; max-width: 160px;">
+                Thao tác
+            </th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<partial name="_cateDetails" />
+
+@section Scripts {
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/datatableconfig.js"></script>
+    <script src="~/js/pages/restaurant-tables/res-tab-index.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}
