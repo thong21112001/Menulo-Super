@@ -14,6 +14,9 @@
 
         public DateTime? CreatedAt { get; set; }
 
+        // Lưu thời điểm logo được cập nhật lần cuối (dạng UTC)
+        public DateTime? LogoUpdatedAtUtc { get; set; }
+
         // Ai (UserId) đã tạo nhà hàng này (saler)
         public string? CreatedBySaleId { get; set; }
 
