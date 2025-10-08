@@ -101,7 +101,14 @@
 
             // Logo (chỉ có ở Details)
             if (dto.logoUrl && logoEl && logoEmpty) {
-                logoEl.src = `/api/images/restaurants/${id}/logo`;
+                let logoSrc = `/api/images/restaurants/${id}/logo`;
+                // Thêm version vào URL nếu có
+                if (dto.logoUpdatedAtUtc) {
+                    // Dùng getTime() để chuyển ngày thành một con số duy nhất
+                    const version = new Date(dto.logoUpdatedAtUtc).getTime();
+                    logoSrc += `?v=${version}`;
+                }
+                logoEl.src = logoSrc;
                 logoEl.classList.remove("d-none");
                 logoEmpty.classList.add("d-none");
             }

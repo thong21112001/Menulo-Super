@@ -19,6 +19,7 @@ namespace Menulo.Pages.Superadmin.Restaurants
 
         // Chỉ để hiển thị logo hiện tại
         public string? CurrentLogoUrl { get; private set; }
+        public long? CurrentLogoVersion { get; private set; } // Dùng long để an toàn
 
 
         public EditModel(IRestaurantService svc)
@@ -49,6 +50,8 @@ namespace Menulo.Pages.Superadmin.Restaurants
             };
 
             CurrentLogoUrl = restaurantDb.LogoUrl;
+            // Lấy Ticks để làm version, nếu null thì thôi
+            CurrentLogoVersion = restaurantDb.LogoUpdatedAtUtc?.Ticks;
 
             return Page();
         }
@@ -61,6 +64,7 @@ namespace Menulo.Pages.Superadmin.Restaurants
             var current = await _svc.GetByIdAsync(Input.RestaurantId);
             if (current is null) return NotFound();
             CurrentLogoUrl = current.LogoUrl;
+            CurrentLogoVersion = current.LogoUpdatedAtUtc?.Ticks;
 
             // Kiểm tra validation cho file upload
             if (ImgUpload is { Length: > 0 })

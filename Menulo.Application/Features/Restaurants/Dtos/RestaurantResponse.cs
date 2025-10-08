@@ -20,6 +20,9 @@ namespace Menulo.Application.Features.Restaurants.Dtos
         string? LogoUrl,
 
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        DateTime? CreatedAt
+        DateTime? CreatedAt,
+
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        DateTime? LogoUpdatedAtUtc
     );
 }

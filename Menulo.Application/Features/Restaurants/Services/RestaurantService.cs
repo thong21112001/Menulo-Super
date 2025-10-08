@@ -127,6 +127,7 @@ namespace Menulo.Application.Features.Restaurants.Services
                 if (logoHasChanged)
                 {
                     entity.LogoUrl = newLogoUrl;
+                    entity.LogoUpdatedAtUtc = DateTime.UtcNow;
                 }
 
                 await _repo.UpdateAsync(entity, ct);
