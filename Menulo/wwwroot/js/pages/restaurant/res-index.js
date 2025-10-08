@@ -101,7 +101,7 @@
 
             // Logo (chỉ có ở Details)
             if (dto.logoUrl && logoEl && logoEmpty) {
-                logoEl.src = dto.logoUrl;              // data:image/png;base64,...
+                logoEl.src = `/api/images/restaurants/${id}/logo`;
                 logoEl.classList.remove("d-none");
                 logoEmpty.classList.add("d-none");
             }

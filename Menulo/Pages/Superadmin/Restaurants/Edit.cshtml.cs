@@ -57,55 +57,45 @@ namespace Menulo.Pages.Superadmin.Restaurants
 
         public async Task<IActionResult> OnPostAsync(CancellationToken ct)
         {
-            if (!ModelState.IsValid)
-            {
-                var errorMessages = ModelState.Values
-                                              .SelectMany(modelStateEntry => modelStateEntry.Errors)
-                                              .Select(error => error.ErrorMessage)
-                                              .ToList();
-
-                TempData.SetError("Lỗi: " + string.Join(" | ", errorMessages));
-                return Page();
-            }
-
-            // Lấy entity hiện tại để có CurrentLogoUrl (nếu cần hiển thị lại khi lỗi)
+            // Lấy URL logo hiện tại để hiển thị lại nếu có lỗi validation
             var current = await _svc.GetByIdAsync(Input.RestaurantId);
             if (current is null) return NotFound();
             CurrentLogoUrl = current.LogoUrl;
 
-            // Nếu người dùng upload logo mới
+            // Kiểm tra validation cho file upload
             if (ImgUpload is { Length: > 0 })
             {
                 var ext = Path.GetExtension(ImgUpload.FileName).ToLowerInvariant();
                 if (!AllowedExts.Contains(ext))
                 {
                     ModelState.AddModelError(nameof(ImgUpload), "Chỉ chấp nhận .jpg, .jpeg, .png.");
-                    return Page();
                 }
-
-                // Transactional trong service:
-                // Upload ảnh mới -> cập nhật DB -> commit -> xóa ảnh cũ (sau commit)
-                await using var s = ImgUpload.OpenReadStream();
-                await _svc.ReplaceLogoAsync(
-                    restaurantId: Input.RestaurantId,
-                    restaurantName: Input.Name,               // dùng cho slug folder Drive
-                    newLogoStream: s,
-                    newLogoFileName: ImgUpload.FileName,
-                    contentType: ImgUpload.ContentType ?? "image/jpeg",
-                    ct: ct
-                );
             }
 
-            // Cập nhật các trường text (Name/Address/Phone).
-            // LogoUrl để null để service hiểu là "không đụng" (giữ nguyên).
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            // Chuẩn bị DTO với các trường text
             var dto = new UpdateRestaurantDto(
                 RestaurantId: Input.RestaurantId,
                 Name: Input.Name,
                 Address: Input.Address,
                 Phone: Input.Phone,
-                LogoUrl: null
+                LogoUrl: null // LogoUrl không dùng ở đây, sẽ được xử lý trong service
             );
-            await _svc.UpdateAsync(dto, ct);
+
+            // Mở stream và gọi service (stream sẽ là null nếu không có file upload)
+            await using var stream = ImgUpload?.OpenReadStream();
+
+            await _svc.UpdateWithOptionalLogoAsync(
+                dto,
+                stream,
+                ImgUpload?.FileName,
+                ImgUpload?.ContentType,
+                ct
+            );
 
             TempData.SetSuccess("Cập nhật nhà hàng thành công!");
             return RedirectToPage("./Index");

@@ -12,13 +12,12 @@ namespace Menulo.Application.Features.Restaurants.Interfaces
         IQueryable<Restaurant> GetQueryableRestaurantsForCurrentUser();
 
         Task<RestaurantDto> CreateWithLogoAsync(
-        string name, string? address, string? phone,
-        Stream logoStream, string logoFileName, string contentType,
-        CancellationToken ct = default);
+            string name, string? address, string? phone,
+            Stream logoStream, string logoFileName, string contentType,
+            CancellationToken ct = default);
 
-        Task<RestaurantDto> ReplaceLogoAsync(
-            int restaurantId, string restaurantName,
-            Stream newLogoStream, string newLogoFileName, string contentType,
+        Task<RestaurantDto> UpdateWithOptionalLogoAsync(UpdateRestaurantDto dto,
+            Stream? newLogoStream, string? newLogoFileName, string? contentType,
             CancellationToken ct = default);
     }
 }

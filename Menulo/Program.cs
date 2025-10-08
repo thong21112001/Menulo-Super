@@ -8,6 +8,8 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+
 // 0) Routing chung (URL đẹp)
 builder.Services.AddRouting(o =>
 {
