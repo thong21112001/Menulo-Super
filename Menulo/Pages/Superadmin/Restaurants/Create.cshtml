@@ -16,7 +16,7 @@
 
             <div class="row">
                 <div class="form-group col-md-3 mb-3">
-                    <label asp-for="Input.Name" class="control-label"></label>
+                    <label asp-for="Input.Name" class="control-label"></label><span class="text-danger">*</span>
                     <input asp-for="Input.Name" class="form-control" maxlength="200" />
                     <span asp-validation-for="Input.Name" class="text-danger"></span>
                 </div>

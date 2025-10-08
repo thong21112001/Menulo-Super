@@ -4,6 +4,7 @@ using Menulo.Configuration;
 using Menulo.Infrastructure;
 using Menulo.Infrastructure.Data;
 using Menulo.Routing;
+using Menulo.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,9 @@ builder.Services.AddMenuloUiRoutes();
 //2. DI cho hạ tầng & ứng dụng
 builder.Services.AddInfrastructureServices(builder.Configuration); // gọi từ Menulo.Infrastructure
 builder.Services.AddApplicationServices(); // gọi từ Menulo.Application
+
+//Tối ưu xử lý ảnh (đăng ký DI)
+builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
 
 //3. Đăng ký Controllers với tùy chọn JSON
 builder.Services.AddControllers().AddJsonOptions(options =>

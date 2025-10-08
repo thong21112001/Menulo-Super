@@ -34,8 +34,4 @@
     <ProjectReference Include="..\Menulo.Infrastructure\Menulo.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

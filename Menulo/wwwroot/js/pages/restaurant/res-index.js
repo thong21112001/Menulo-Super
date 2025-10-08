@@ -99,16 +99,15 @@
             setDetailField(detailsModalEl, "phone", dto.phone ?? "—");
             setDetailField(detailsModalEl, "createdAt", fmtDate(dto.createdAt));
 
-            // Logo (chỉ có ở Details)
+            // Logo (chỉ có ở Details)s
             if (dto.logoUrl && logoEl && logoEmpty) {
-                let logoSrc = `/api/images/restaurants/${id}/logo`;
-                // Thêm version vào URL nếu có
+                let logoSrc = `/api/images/restaurants/${id}/logo?w=300&h=300`;
                 if (dto.logoUpdatedAtUtc) {
-                    // Dùng getTime() để chuyển ngày thành một con số duy nhất
                     const version = new Date(dto.logoUpdatedAtUtc).getTime();
-                    logoSrc += `?v=${version}`;
+                    logoSrc += `&v=${version}`;
                 }
                 logoEl.src = logoSrc;
+                // Thêm loading="lazy" vào thẻ img trong file .cshtml của modal nếu cần
                 logoEl.classList.remove("d-none");
                 logoEmpty.classList.add("d-none");
             }

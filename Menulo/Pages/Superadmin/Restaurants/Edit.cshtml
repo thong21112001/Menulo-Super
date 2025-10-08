@@ -47,14 +47,14 @@
                 <div class="mb-2">
                     <span class="form-text text-muted">Logo hiện tại:</span><br />
                     @{
-                        // Thêm version vào URL nếu có
-                        var logoSrc = $"/api/images/restaurants/{Model.Input.RestaurantId}/logo";
+                        // Thêm version và kích thước vào URL
+                        var logoSrc = $"/api/images/restaurants/{Model.Input.RestaurantId}/logo?w=150&h=150";
                         if (Model.CurrentLogoVersion.HasValue)
                         {
-                            logoSrc += $"?v={Model.CurrentLogoVersion.Value}";
+                            logoSrc += $"&v={Model.CurrentLogoVersion.Value}";
                         }
                     }
-                    <img src="@logoSrc" width="150" class="img-thumbnail mt-2" alt="Restaurant Logo" />
+                    <img src="@logoSrc" width="150" height="150" class="img-thumbnail mt-2" alt="Restaurant Logo" loading="lazy" />
                 </div>
             }
 

@@ -1,4 +1,4 @@
-﻿using Menulo.Application.Features.Restaurants.Interfaces;
+﻿using Menulo.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,46 +9,31 @@ namespace Menulo.Controllers
     [Authorize]
     public class ImagesController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpFactory;
-        private readonly IRestaurantService _resSvc;
+        private readonly IImageProcessingService _imageSvc;
 
-        public ImagesController(IHttpClientFactory httpFactory, IRestaurantService resSvc)
+        public ImagesController(IImageProcessingService imageSvc)
         {
-            _httpFactory = httpFactory;
-            _resSvc = resSvc;
+            _imageSvc = imageSvc;
         }
 
 
         [HttpGet("restaurants/{restaurantId:int}/logo")]
-        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)] // Cache ảnh trong 1 giờ
-        public async Task<IActionResult> GetRestaurantLogo(int restaurantId, CancellationToken ct)
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)] // Cache 1 ngày
+        public async Task<IActionResult> GetRestaurantLogo(int restaurantId, [FromQuery] int? w, [FromQuery] int? h, CancellationToken ct)
         {
-            var restaurant = await _resSvc.GetByIdAsync(restaurantId, ct);
-            if (restaurant is null || string.IsNullOrWhiteSpace(restaurant.LogoUrl))
+            try
+            {
+                var imageBytes = await _imageSvc.GetOrProcessRestaurantLogoAsync(restaurantId, w, h, ct);
+                return File(imageBytes, "image/jpeg");
+            }
+            catch (FileNotFoundException)
             {
                 return NotFound();
             }
-
-            try
-            {
-                var client = _httpFactory.CreateClient();
-                var response = await client.GetAsync(restaurant.LogoUrl, ct);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    // Trả về một ảnh placeholder nếu không tải được
-                    return NotFound("Image from source could not be loaded.");
-                }
-
-                var imageBytes = await response.Content.ReadAsByteArrayAsync(ct);
-                var contentType = response.Content.Headers.ContentType?.ToString() ?? "image/jpeg";
-
-                return File(imageBytes, contentType);
-            }
             catch (Exception)
             {
-                // Xử lý lỗi nếu có vấn đề về mạng hoặc URL không hợp lệ
-                return StatusCode(500, "Error fetching image from source.");
+                // Có thể trả về 1 ảnh placeholder mặc định ở đây
+                return StatusCode(500);
             }
         }
     }
