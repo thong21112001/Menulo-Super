@@ -19,5 +19,8 @@
             int page, int pageSize,
             Func<IQueryable<TEntity>, IQueryable<TEntity>>? shape = null,
             CancellationToken ct = default);
+
+        // Phương thức để thêm nhiều bản ghi cùng lúc
+        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
     }
 }

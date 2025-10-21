@@ -9,8 +9,9 @@ namespace Menulo.Application.Features.ResTables.Dtos
             [Display(Name = "Tên nhà hàng")]
             public int RestaurantId { get; set; }
 
-            [Display(Name = "Mã bàn")]
-            public string? TableCode { get; set; }
+            [Range(1, 50, ErrorMessage = "Số lượng bàn phải từ 1 đến 50")]
+            [Display(Name = "Số lượng bàn")]
+            public int? TableQuantity { get; set; } = 1;
 
             [Display(Name = "Thông tin bàn")]
             public string? Description { get; set; }

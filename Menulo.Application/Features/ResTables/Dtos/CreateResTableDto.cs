@@ -3,7 +3,7 @@
     public sealed record CreateResTableDto
     (
         int RestaurantId,
-        string TableCode,
+        int? TableQuantity,
         string? Description
     );
 }

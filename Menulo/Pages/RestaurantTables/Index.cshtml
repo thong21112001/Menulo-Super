@@ -11,7 +11,7 @@
 }
 
 @{
-    ViewData["Title"] = "Danh sách bàn ăn";
+    ViewData["Title"] = "Danh sách bàn";
     var isSuperAdmin = User.IsInRole("superadmin");
 }
 
@@ -30,18 +30,18 @@
         <tr>
             <th data-type="index" class="stt text-center">#</th>
 
-            <th data-data="categoryName" data-name="CategoryName">Tên danh mục</th>
-
             @if (isSuperAdmin)
             {
                 <th data-data="restaurantName" data-name="Restaurant.Name">Nhà hàng</th>
             }
 
-            <th data-data="priority" data-name="CategoryPriority">Độ ưu tiên hiển thị</th>
+            <th data-data="description" data-name="Description">Tên bàn</th>
+
+            <th data-data="tableCode" data-name="TableCode">Mã bàn</th>
 
             <th data-type="actions"
-                data-data="categoryId"
-                data-name="CategoryId"
+                data-data="tableId"
+                data-name="TableId"
                 class="no-sort text-center"
                 style="min-width: 120px; max-width: 160px;">
                 Thao tác

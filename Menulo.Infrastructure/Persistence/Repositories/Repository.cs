@@ -30,6 +30,13 @@ namespace Menulo.Infrastructure.Persistence.Repositories
             return entity;
         }
 
+        public Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        {
+            _db.Set<TEntity>().AddRange(entities);
+            // Không SaveChanges ở đây để tuân thủ UoW
+            return Task.CompletedTask;
+        }
+
         public Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             _db.Set<TEntity>().Update(entity);

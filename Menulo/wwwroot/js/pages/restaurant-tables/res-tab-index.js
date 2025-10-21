@@ -2,16 +2,14 @@
     "use strict";
 
     const SELECTORS = Object.freeze({
-        table: "#resTable",                 // <<< Đổi id table
+        table: "#listTable",                 // <<< Đổi id table
         metaXsrf: 'meta[name="xsrf-token"]',
         detailsModal: "#resDetailsModal",
         loading: "#res-details-loading",
         details: "#res-details",
         empty: "#res-details-empty",
         editLink: "#res-edit-link",
-        btnDeleteInDetails: "#btn-delete-in-details",
-        logo: "#res-logo",
-        logoEmpty: "#res-logo-empty"
+        btnDeleteInDetails: "#btn-delete-in-details"
     });
 
     const STATE = {
@@ -35,27 +33,17 @@
         const t = modalEl.querySelector(`[data-field="${key}"]`);
         if (t) t.textContent = value ?? "";
     };
-    const fmtDate = (iso) => {
-        if (!iso) return "—";
-        try {
-            const d = new Date(iso);
-            return d.toLocaleString("vi-VN", {
-                day: "2-digit", month: "2-digit", year: "numeric",
-                hour: "2-digit", minute: "2-digit"
-            });
-        } catch { return "—"; }
-    };
 
     // --- DataTables ---
     function initTable() {
         STATE.dt = window.initDataTable(SELECTORS.table, {
-            ajaxUrl: "/api/restaurants/datatable",  // <<< endpoint Restaurant API
+            ajaxUrl: "/api/restable/datatable",  // <<< endpoint Restaurant API
             renderers: {
                 actions: (id, type, row, meta) => {
                     if (!id) return "";
                     return `
                       <div class="d-flex justify-content-center gap-1">
-                        <a href="/sa/ds-nha-hang/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
+                        <a href="/ds-ban/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
                           <i class="bi bi-pencil-square"></i>
                         </a>
                         <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
@@ -169,7 +157,7 @@
         if (window.Swal) {
             const { isConfirmed } = await Swal.fire({
                 icon: "warning",
-                title: "Xoá nhà hàng này?",
+                title: "Xoá bàn này?",
                 text: "Hành động này không thể hoàn tác.",
                 showCancelButton: true,
                 confirmButtonText: "Xoá",
@@ -177,7 +165,7 @@
             });
             if (isConfirmed) await confirmDelete();
         } else {
-            if (confirm("Xoá nhà hàng này?")) await confirmDelete();
+            if (confirm("Xoá bàn này?")) await confirmDelete();
         }
     }
 

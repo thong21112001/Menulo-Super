@@ -1,4 +1,86 @@
 ﻿@page
 @model Menulo.Pages.RestaurantTables.CreateModel
+
 @{
+    ViewData["Title"] = "Tạo mới";
+}
+
+<h3>Tạo mới bàn</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="createForm" method="post" onsubmit="disableSubmitButton()">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                @if (User.IsInRole("superadmin"))
+                {
+                    <div class="form-group col-md-4 mb-3">
+                        <label asp-for="Input.RestaurantId" class="control-label"></label>
+                        <!-- superadmin -->
+                        <select asp-for="Input.RestaurantId"
+                                class="form-control"
+                                asp-items="ViewBag.RestaurantId">
+                        </select>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="form-group col-md-4 mb-3" style="display:none;">
+                        <label asp-for="Input.RestaurantId" class="control-label"></label>
+                        <input class="form-control" value="@Model.RestaurantName" disabled />
+                    </div>
+                }
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.Description" class="control-label"></label>
+                    <input asp-for="Input.Description" class="form-control" maxlength="400"
+                           placeholder="Để trống để tự động tạo: Bàn số 1, Bàn số 2..." />
+                    <span asp-validation-for="Input.Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.TableQuantity" class="control-label">Số lượng bàn</label>
+                    <input asp-for="Input.TableQuantity"
+                           class="form-control"
+                           type="text"
+                           maxlength="2"
+                           placeholder="Để trống hoặc nhập 1 để tạo 1 bàn"
+                           oninput="validateTableQuantity(this)"
+                           onkeypress="return isNumberKey(event)"
+                           onpaste="return handlePaste(event)" />
+                    <span asp-validation-for="Input.TableQuantity" class="text-danger"></span>
+                </div>
+            </div>
+
+
+            <div class="form-group mt-3">
+                <input id="submitBtn" type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
 }
