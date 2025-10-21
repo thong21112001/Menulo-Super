@@ -4,6 +4,7 @@ using Menulo.Application.Features.ResTables.Interfaces;
 using Menulo.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 using System.Linq.Expressions;
 using static Menulo.Application.Common.Contracts.DataTables.DataTablesModels;
 
@@ -15,11 +16,13 @@ namespace Menulo.Controllers
     public sealed class ResTableController : DataTablesControllerBase
     {
         private readonly IResTablesService _service;
+        private readonly ILogger<ResTableController> _logger;
 
 
-        public ResTableController(IMapper mapper, IResTablesService service) : base(mapper)
+        public ResTableController(IMapper mapper, IResTablesService service, ILogger<ResTableController> logger) : base(mapper)
         {
             _service = service;
+            _logger = logger;
         }
 
 
@@ -63,6 +66,51 @@ namespace Menulo.Controllers
         public Task<IActionResult> Delete(int id, CancellationToken ct)
         {
             throw new NotImplementedException();
+        }
+
+        // API 4: Tạo mã QR từ GUID
+        // Render QR từ chính TableCode (không phụ thuộc bất cứ URL nào)
+        [HttpGet("qr-table/{id:int}")]
+        [Produces("image/png")]
+        public async Task<IActionResult> GetQrTable(int id, [FromQuery] int scale = 10, CancellationToken ct = default)
+        {
+            try
+            {
+                if (id <= 0) return BadRequest("Invalid id.");
+
+                var dto = await _service.GetByIdAsync(id, ct);
+                if (dto is null) return NotFound();
+
+                // payload tạm thời: chỉ là TableCode
+                // (sau này muốn đổi sang URL/deep-link/JSON thì chỉ thay chuỗi này)
+                //var payload = $"{flutterWebAppUrl}?tableCode={Uri.EscapeDataString(dto.TableCode)}";
+                var payload = dto.TableCode;
+                if (string.IsNullOrWhiteSpace(payload))
+                    return Problem("TableCode is missing.", statusCode: 500);
+
+                // giới hạn scale an toàn
+                if (scale < 4) scale = 4;
+                if (scale > 20) scale = 20;
+
+                using var gen = new QRCodeGenerator();
+                using var data = gen.CreateQrCode(payload, QRCodeGenerator.ECCLevel.Q);
+
+                // PNG dạng byte[]
+                using var png = new PngByteQRCode(data);
+                var bytes = png.GetGraphic(scale);
+
+                // cache/etag để đỡ tốn CPU
+                Response.Headers.CacheControl = "public, max-age=86400";
+                var etag = $"W/\"{Convert.ToBase64String(System.Security.Cryptography.SHA1.HashData(bytes))}\"";
+                Response.Headers.ETag = etag;
+
+                return File(bytes, "image/png");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "QR render failed for tableId {Id}", id);
+                return Problem("Internal error while generating QR.", statusCode: 500);
+            }
         }
     }
 }

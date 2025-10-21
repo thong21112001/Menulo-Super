@@ -9,7 +9,9 @@
         details: "#res-tb-details",
         empty: "#res-tb-details-empty",
         editLink: "#res-edit-link",
-        btnDeleteInDetails: "#btn-delete-in-details"
+        btnDeleteInDetails: "#btn-delete-in-details",
+        logo: "#res-logo",
+        logoEmpty: "#res-logo-empty"
     });
 
     const STATE = {
@@ -86,18 +88,15 @@
             setDetailField(detailsModalEl, "description", dto.description ?? "—");
             setDetailField(detailsModalEl, "tableCode", dto.tableCode ?? "—");
 
-            //// Logo (chỉ có ở Details)s
-            //if (dto.logoUrl && logoEl && logoEmpty) {
-            //    let logoSrc = `/api/images/restaurants/${id}/logo?w=300&h=300`;
-            //    if (dto.logoUpdatedAtUtc) {
-            //        const version = new Date(dto.logoUpdatedAtUtc).getTime();
-            //        logoSrc += `&v=${version}`;
-            //    }
-            //    logoEl.src = logoSrc;
-            //    // Thêm loading="lazy" vào thẻ img trong file .cshtml của modal nếu cần
-            //    logoEl.classList.remove("d-none");
-            //    logoEmpty.classList.add("d-none");
-            //}
+            // Logo (chỉ có ở Details)s
+            if (dto.tableCode && logoEl && logoEmpty) {
+                const qrSrc = `/api/restable/qr-table/${id}?scale=10`; // chỉ là tableCode, chưa dùng URL
+                logoEl.loading = "lazy";
+                logoEl.decoding = "async";
+                logoEl.src = qrSrc;
+                logoEl.classList.remove("d-none");
+                logoEmpty.classList.add("d-none");
+            }
 
             // Footer
             $(SELECTORS.editLink).removeClass("d-none").attr("href", `/ds-ban/${id}/chinh-sua`);
