@@ -48,9 +48,13 @@ namespace Menulo.Controllers
 
         // API 2: Lấy dữ liệu để hiển thị cho view chi tiết và xóa
         [HttpGet("{id:int}")]
-        public Task<ActionResult<ResTableResponse>> Get(int id, CancellationToken ct)
+        public async Task<ActionResult<ResTableResponse>> Get(int id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var dto = await _service.GetByIdAsync(id, ct);
+
+            return dto is null
+                    ? NotFound()
+                    : Ok(dto);
         }
 
         // API 3: Xóa dữ liệu

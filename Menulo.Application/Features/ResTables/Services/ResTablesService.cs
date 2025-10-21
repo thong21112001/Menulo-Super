@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Menulo.Application.Common.Interfaces;
 using Menulo.Application.Features.ResTables.Dtos;
 using Menulo.Application.Features.ResTables.Interfaces;
@@ -73,9 +74,26 @@ namespace Menulo.Application.Features.ResTables.Services
             throw new NotImplementedException();
         }
 
-        public Task<ResTableResponse?> GetByIdAsync(int tableId, CancellationToken ct = default)
+        public async Task<ResTableResponse?> GetByIdAsync(int tableId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var q = _repo.GetQueryable().AsNoTracking();
+
+            if (!_currentUser.IsSuperAdmin && _currentUser.RestaurantId is int rid)
+                q = q.Where(c => c.RestaurantId == rid);
+
+            var dto = await q
+                .Where(c => c.TableId == tableId)
+                .ProjectTo<ResTableResponse>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(ct);
+
+            if (dto is null) return null;
+
+            if (!_currentUser.IsSuperAdmin)
+            {
+                dto = dto with { RestaurantName = null };
+            }
+
+            return dto;
         }
 
         public IQueryable<RestaurantTable> GetQueryableRestaurantTableForCurrentUser()

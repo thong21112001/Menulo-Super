@@ -1,5 +1,73 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿<!-- Details Modal -->
+<div class="modal fade" id="resDetailsModal" tabindex="-1"
+     aria-labelledby="resDetailsTitle" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="resDetailsTitle">
+                    <i class="bi bi-info-circle me-1"></i> Chi tiết bàn
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Loading -->
+                <div id="res-tb-details-loading" class="text-center py-5 d-none">
+                    <div class="spinner-border" role="status" aria-hidden="true"></div>
+                    <div class="mt-2">Đang tải...</div>
+                </div>
+
+                <!-- Details -->
+                <div id="res-tb-details" class="d-none" data-id="">
+                    <div class="row g-3 align-items-start">
+                        <!-- Mã qr bàn để tải xuống -->
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-2 text-center">
+                                <img id="res-logo"
+                                     src=""
+                                     alt="Logo nhà hàng"
+                                     class="img-fluid rounded-3 d-none"
+                                     style="max-height:220px; object-fit:contain;">
+                                <div id="res-logo-empty" class="text-muted py-5">
+                                    <i class="bi bi-image me-1"></i> Chưa có logo
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fields -->
+                        <div class="col-md-8">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Nhà hàng</dt>
+                                <dd class="col-sm-8" data-field="restaurantName"></dd>
+
+                                <dt class="col-sm-4">Tên bàn</dt>
+                                <dd class="col-sm-8 fw-semibold" data-field="description"></dd>
+
+                                <dt class="col-sm-4">Mã bàn</dt>
+                                <dd class="col-sm-8" data-field="tableCode"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div id="res-tb-details-empty" class="alert alert-warning d-none mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Không tìm thấy dữ liệu.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="res-edit-link" class="btn btn-warning d-none">
+                    <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                </a>
+                <button id="btn-delete-in-details" class="btn btn-danger d-none">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+
+        </div>
+    </div>
+</div>

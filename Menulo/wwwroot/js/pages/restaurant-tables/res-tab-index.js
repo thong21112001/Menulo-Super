@@ -5,9 +5,9 @@
         table: "#listTable",                 // <<< Đổi id table
         metaXsrf: 'meta[name="xsrf-token"]',
         detailsModal: "#resDetailsModal",
-        loading: "#res-details-loading",
-        details: "#res-details",
-        empty: "#res-details-empty",
+        loading: "#res-tb-details-loading",
+        details: "#res-tb-details",
+        empty: "#res-tb-details-empty",
         editLink: "#res-edit-link",
         btnDeleteInDetails: "#btn-delete-in-details"
     });
@@ -78,30 +78,29 @@
         detailsModal.show();
 
         try {
-            const res = await fetch(`/api/restaurants/${id}`, { headers: antiforgeryHeaders() });
+            const res = await fetch(`/api/restable/${id}`, { headers: antiforgeryHeaders() });
             if (!res.ok) throw new Error("Load detail failed");
             const dto = await res.json(); // RestaurantDetailsDto
 
-            setDetailField(detailsModalEl, "name", dto.name);
-            setDetailField(detailsModalEl, "address", dto.address ?? "—");
-            setDetailField(detailsModalEl, "phone", dto.phone ?? "—");
-            setDetailField(detailsModalEl, "createdAt", fmtDate(dto.createdAt));
+            setDetailField(detailsModalEl, "restaurantName", dto.restaurantName);
+            setDetailField(detailsModalEl, "description", dto.description ?? "—");
+            setDetailField(detailsModalEl, "tableCode", dto.tableCode ?? "—");
 
-            // Logo (chỉ có ở Details)s
-            if (dto.logoUrl && logoEl && logoEmpty) {
-                let logoSrc = `/api/images/restaurants/${id}/logo?w=300&h=300`;
-                if (dto.logoUpdatedAtUtc) {
-                    const version = new Date(dto.logoUpdatedAtUtc).getTime();
-                    logoSrc += `&v=${version}`;
-                }
-                logoEl.src = logoSrc;
-                // Thêm loading="lazy" vào thẻ img trong file .cshtml của modal nếu cần
-                logoEl.classList.remove("d-none");
-                logoEmpty.classList.add("d-none");
-            }
+            //// Logo (chỉ có ở Details)s
+            //if (dto.logoUrl && logoEl && logoEmpty) {
+            //    let logoSrc = `/api/images/restaurants/${id}/logo?w=300&h=300`;
+            //    if (dto.logoUpdatedAtUtc) {
+            //        const version = new Date(dto.logoUpdatedAtUtc).getTime();
+            //        logoSrc += `&v=${version}`;
+            //    }
+            //    logoEl.src = logoSrc;
+            //    // Thêm loading="lazy" vào thẻ img trong file .cshtml của modal nếu cần
+            //    logoEl.classList.remove("d-none");
+            //    logoEmpty.classList.add("d-none");
+            //}
 
             // Footer
-            $(SELECTORS.editLink).removeClass("d-none").attr("href", `/sa/ds-nha-hang/${id}/chinh-sua`);
+            $(SELECTORS.editLink).removeClass("d-none").attr("href", `/ds-ban/${id}/chinh-sua`);
             $(SELECTORS.btnDeleteInDetails).removeClass("d-none").attr("data-id", String(id));
             $(SELECTORS.loading).addClass("d-none");
             $(SELECTORS.details).removeClass("d-none");
@@ -121,7 +120,7 @@
             btn.disabled = true; btn.setAttribute("aria-busy", "true");
 
             try {
-                const r = await fetch(`/api/restaurants/${id}`, {
+                const r = await fetch(`/api/restable/${id}`, {
                     method: "DELETE",
                     headers: antiforgeryHeaders()
                 });
@@ -134,7 +133,7 @@
                 }
 
                 if (r.status === 409) {
-                    let msg = "Nhà hàng đã phát sinh dữ liệu nên không thể xoá.";
+                    let msg = "Bàn đã phát sinh dữ liệu nên không thể xoá.";
                     try {
                         const json = await r.json();
                         if (json?.message) msg = json.message;
