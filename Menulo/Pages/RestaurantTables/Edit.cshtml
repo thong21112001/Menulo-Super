@@ -1,4 +1,78 @@
-﻿@page
+﻿@page "{id:int}"
 @model Menulo.Pages.RestaurantTables.EditModel
+
 @{
+    ViewData["Title"] = "Cập nhập";
+}
+
+<h3>Cập nhập thông tin bàn</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Input.TableId" />
+
+            <div class="row">
+                @if (User.IsInRole("superadmin"))
+                {
+                    <div class="form-group col-md-4 mb-3">
+                        <label asp-for="Input.RestaurantId" class="control-label"></label>
+                        <!-- superadmin -->
+                        <select asp-for="Input.RestaurantId"
+                                class="form-control"
+                                asp-items="ViewBag.RestaurantId">
+                        </select>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="form-group col-md-4 mb-3" style="display:none;">
+                        <label asp-for="Input.RestaurantId" class="control-label"></label>
+                        <input class="form-control" value="@Model.RestaurantName" disabled />
+                    </div>
+                }
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.Description" class="control-label"></label>
+                    <input asp-for="Input.Description" class="form-control" maxlength="400"
+                           placeholder="Để trống để tự động tạo: Bàn số 1, Bàn số 2..." />
+                    <span asp-validation-for="Input.Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.TableCode" class="control-label"></label>
+                    <input asp-for="Input.TableCode" class="form-control" readonly disabled />
+                    <span asp-validation-for="Input.TableCode" class="text-danger"></span>
+                </div>
+            </div>
+
+
+            <div class="form-group mt-3">
+                <input id="submitBtn" type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
 }

@@ -64,9 +64,33 @@ namespace Menulo.Application.Features.ResTables.Services
             return _mapper.Map<ResTableDto>(tablesToAdd.First());
         }
 
-        public Task<ResTableDto> UpdateAsync(UpdateResTableDto dto, CancellationToken ct = default)
+        public async Task<ResTableDto> UpdateAsync(UpdateResTableDto dto, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var q = _repo.GetQueryable();
+
+            if(!_currentUser.IsSuperAdmin && _currentUser.RestaurantId is int rid)
+                q = q.Where(c => c.RestaurantId == rid);
+
+            var entity = await q.FirstOrDefaultAsync(c => c.TableId == dto.TableId, ct)
+                         ?? throw new KeyNotFoundException("Table not found");
+
+            entity.Description = dto.Description?.Trim();
+
+            if (_currentUser.IsSuperAdmin)
+            {
+                entity.RestaurantId = dto.RestaurantId;
+            }
+
+            await _repo.UpdateAsync(entity, ct);
+            await _uow.SaveChangesAsync(ct);
+
+            var result = await _repo.GetQueryable()
+                .AsNoTracking()
+                .Where(c => c.TableId == entity.TableId)
+                .ProjectTo<ResTableDto>(_mapper.ConfigurationProvider)
+                .FirstAsync(ct);
+
+            return result;
         }
 
         public async Task DeleteAsync(int tableId, CancellationToken ct = default)
