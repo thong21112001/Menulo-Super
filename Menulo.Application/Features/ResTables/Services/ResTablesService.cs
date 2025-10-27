@@ -69,9 +69,29 @@ namespace Menulo.Application.Features.ResTables.Services
             throw new NotImplementedException();
         }
 
-        public Task DeleteAsync(int tableId, CancellationToken ct = default)
+        public async Task DeleteAsync(int tableId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            var entity = await _repo.GetQueryable()
+                        .FirstOrDefaultAsync(r => r.TableId == tableId, ct)
+                         ?? throw new KeyNotFoundException("Table not found");
+
+            // Ktra du lieu da phat sinh chua
+            var orderRepo = _uow.Repository<Order>().GetQueryable();
+
+            // ItemsTmp không có RestaurantId trực tiếp → kiểm qua bàn
+            var tableRepo = _uow.Repository<RestaurantTable>().GetQueryable();
+            var hasTmp = await tableRepo
+                    .Where(t => t.TableId == tableId)
+                    .AnyAsync(t => t.ItemsTmps.Any(), ct);
+
+            var hasData = await orderRepo.AnyAsync(x => x.TableId == tableId, ct) || hasTmp;
+
+            if (hasData)
+                throw new InvalidOperationException("Bàn đã phát sinh dữ liệu nên không thể xoá.");
+
+            // Cho xoá khi sạch dữ liệu
+            await _repo.DeleteAsync(entity, ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         public async Task<ResTableResponse?> GetByIdAsync(int tableId, CancellationToken ct = default)

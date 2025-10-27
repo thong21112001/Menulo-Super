@@ -63,9 +63,22 @@ namespace Menulo.Controllers
         // API 3: Xóa dữ liệu
         [HttpDelete("{id:int}")]
         [ValidateAntiForgeryToken]
-        public Task<IActionResult> Delete(int id, CancellationToken ct)
+        public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _service.DeleteAsync(id, ct);
+                return NoContent(); // 204
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Đã phát sinh dữ liệu → chặn xoá
+                return Conflict(new { code = "RESTAURANT_HAS_DATA", message = ex.Message });
+            }
         }
 
         // API 4: Tạo mã QR từ GUID
