@@ -6,8 +6,8 @@ namespace Menulo.Application.Features.Sales.Interfaces
     {
         Task<SaleDto> CreateAsync(CreateSaleDto dto, CancellationToken ct = default);
         //Task<SaleDto> UpdateAsync(UpdateResTableDto dto, CancellationToken ct = default);
-        //Task DeleteAsync(int tableId, CancellationToken ct = default);
-        //Task<ResTableResponse?> GetByIdAsync(int tableId, CancellationToken ct = default);
-        //IQueryable<RestaurantTable> GetQueryableRestaurantTableForCurrentUser();
+        Task DeleteAsync(string userId, CancellationToken ct = default);
+        Task<SaleDto?> GetByIdAsync(string userId, CancellationToken ct = default);
+        IQueryable<SaleRowDto> GetQueryableSales();
     }
 }

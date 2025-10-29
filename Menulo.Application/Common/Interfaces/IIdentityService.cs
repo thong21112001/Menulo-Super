@@ -1,4 +1,6 @@
-﻿namespace Menulo.Application.Common.Interfaces
+﻿using Menulo.Application.Features.Sales.Dtos;
+
+namespace Menulo.Application.Common.Interfaces
 {
     // Đây là Abstraction (Tính trừu tượng)
     public interface IIdentityService
@@ -25,5 +27,20 @@
         /// Kiểm tra xem Số điện thoại đã được sử dụng hay chưa.
         /// </summary>
         Task<bool> IsPhoneTakenAsync(string phoneNumber, CancellationToken ct = default);
+
+        /// <summary>
+        /// (Dùng cho DataTables) Trả về IQueryable đã được chiếu sang DTO.
+        /// </summary>
+        IQueryable<SaleRowDto> GetUsersAsQueryable(string roleName);
+
+        /// <summary>
+        /// (Dùng cho API Get Details) Lấy chi tiết user bằng ID.
+        /// </summary>
+        Task<SaleDto?> GetUserByIdAsync(string userId, CancellationToken ct);
+
+        /// <summary>
+        /// (Dùng cho API Delete) Xóa user bằng ID.
+        /// </summary>
+        Task<IdentityResultDto> DeleteUserAsync(string userId, CancellationToken ct);
     }
 }

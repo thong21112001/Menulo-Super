@@ -50,5 +50,31 @@ namespace Menulo.Application.Features.Sales.Services
             // 4. Trả về DTO đã được tạo thủ công (không dùng AutoMapper)
             return saleDto;
         }
+
+        public async Task DeleteAsync(string userId, CancellationToken ct = default)
+        {
+            // 1. Phải 'await' để nhận về đối tượng 'IdentityResultDto'
+            var result = await _identityService.DeleteUserAsync(userId, ct);
+
+            // 2. Kiểm tra kết quả (GIỐNG HỆT NHƯ CREATEASYNC)
+            if (!result.Succeeded)
+            {
+                // 3. Ném lỗi để Controller có thể bắt
+                // Lỗi này sẽ được SalesController bắt và trả về 409 Conflict
+                throw new InvalidOperationException(
+                    "Xóa tài khoản thất bại: " + string.Join(", ", result.Errors)
+                );
+            }
+        }
+
+        public Task<SaleDto?> GetByIdAsync(string userId, CancellationToken ct = default)
+        {
+            return _identityService.GetUserByIdAsync(userId,ct);
+        }
+
+        public IQueryable<SaleRowDto> GetQueryableSales()
+        {
+            return _identityService.GetUsersAsQueryable("sale");
+        }
     }
 }

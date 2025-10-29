@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Menulo.Infrastructure
 {
@@ -47,6 +48,8 @@ namespace Menulo.Infrastructure
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             // Bind options từ section "GoogleOAuth"
             services.AddOptions<GoogleOAuthOptions>()
