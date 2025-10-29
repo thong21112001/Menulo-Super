@@ -13,6 +13,7 @@ namespace Menulo.Routing
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, CategoriesRoutes>();
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, SuperadminRestaurantsRoutes>();
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, ResTableRoutes>();
+            services.AddTransient<IConfigureOptions<RazorPagesOptions>, SuperadminSalesRoutes>();
             return services;
         }
     }
