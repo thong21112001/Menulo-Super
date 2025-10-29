@@ -1,4 +1,43 @@
 ﻿@page
 @model Menulo.Pages.Superadmin.Sales.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions {
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
+}
+
 @{
+    ViewData["Title"] = "Danh sách sale";
+}
+
+@section Styles {
+    <link href="~/css/datatablesconfig.css" rel="stylesheet" />
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<p>
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
+</p>
+
+
+@section Scripts {
+    @* <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/datatableconfig.js"></script>
+    <script src="~/js/pages/restaurant/res-index.js"></script> *@
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
 }

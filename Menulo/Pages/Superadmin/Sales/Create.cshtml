@@ -1,4 +1,83 @@
 ﻿@page
 @model Menulo.Pages.Superadmin.Sales.CreateModel
 @{
+    ViewData["Title"] = "Tạo mới thông tin";
+}
+
+<h3>@ViewData["Title"] sale</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="createForm" method="post" onsubmit="disableSubmitButton()">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.FullName" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.FullName" class="form-control" maxlength="200" />
+                    <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.Username" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.Username" class="form-control" maxlength="200" />
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.Email" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.Email" class="form-control" maxlength="100" placeholder="Email" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.PhoneNumber" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.PhoneNumber" class="form-control" maxlength="20" placeholder="Số điện thoại"/>
+                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.Password" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.Password" class="form-control" maxlength="20"
+                           autocomplete="new-password" placeholder="Mật khẩu" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 mb-3">
+                    <label asp-for="Input.ConfirmPassword" class="control-label"></label><span class="text-danger">*</span>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" maxlength="20"
+                            autocomplete="new-password" placeholder="Xác nhận mật khẩu" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <input id="submitBtn" type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
 }

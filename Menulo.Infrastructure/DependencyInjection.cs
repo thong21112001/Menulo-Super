@@ -46,7 +46,7 @@ namespace Menulo.Infrastructure
 
             services.AddHttpContextAccessor();
             services.AddScoped<ICurrentUser, CurrentUser>();
-
+            services.AddScoped<IIdentityService, IdentityService>();
 
             // Bind options từ section "GoogleOAuth"
             services.AddOptions<GoogleOAuthOptions>()
