@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using Menulo.Application.Features.Restaurants.Dtos;
-using Menulo.Application.Features.Restaurants.Interfaces;
 using Menulo.Application.Features.Sales.Dtos;
 using Menulo.Application.Features.Sales.Interfaces;
-using Menulo.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;

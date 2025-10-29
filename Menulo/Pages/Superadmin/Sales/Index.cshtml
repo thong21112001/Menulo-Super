@@ -23,11 +23,34 @@
     <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
 </p>
 
+<table id="saleTable" class="table table-striped table-bordered nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th data-type="index" class="stt text-center">#</th>
+
+            <th data-data="fullName" data-name="FullName">Họ và tên</th>
+            <th data-data="username" data-name="Username">Tài khoản</th>
+            <th data-data="email" data-name="Email">Email</th>
+            <th data-data="phoneNumber" data-name="PhoneNumber">Số điện thoại</th>
+
+            <th data-type="actions"
+                data-data="userId"
+                data-name="userId"
+                class="no-sort text-center"
+                style="min-width: 120px; max-width: 160px;">
+                Thao tác
+            </th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<partial name="_saleDetails" />
 
 @section Scripts {
-    @* <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
     <script src="~/js/datatableconfig.js"></script>
-    <script src="~/js/pages/restaurant/res-index.js"></script> *@
+    <script src="~/js/pages/sale/sale-index.js"></script>
     @{
         var alert = TempData.GetAlert();
         if (alert != null)

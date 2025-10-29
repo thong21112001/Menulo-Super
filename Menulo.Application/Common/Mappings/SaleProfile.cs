@@ -11,6 +11,8 @@ namespace Menulo.Application.Common.Mappings
             // Tự động map từ SaleRequest.Create -> CreateSaleDto
             // AutoMapper sẽ tự động khớp các thuộc tính có cùng tên
             CreateMap<SaleRequest.Create, CreateSaleDto>();
+
+            CreateMap<SaleRowDto, SaleRowDto>();
         }
     }
 }

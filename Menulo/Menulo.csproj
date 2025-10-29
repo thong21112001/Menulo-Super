@@ -35,8 +35,4 @@
     <ProjectReference Include="..\Menulo.Infrastructure\Menulo.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\js\pages\sale\" />
-  </ItemGroup>
-
 </Project>
