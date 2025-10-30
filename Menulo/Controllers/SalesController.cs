@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Menulo.Application.Features.Restaurants.Dtos;
+using Menulo.Application.Features.Restaurants.Interfaces;
 using Menulo.Application.Features.Sales.Dtos;
 using Menulo.Application.Features.Sales.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +16,12 @@ namespace Menulo.Controllers
     public class SalesController : DataTablesControllerBase
     {
         private readonly ISaleService _service;
+        private readonly IRestaurantService _resService;
 
-        public SalesController(IMapper mapper, ISaleService service) : base(mapper)
+        public SalesController(IMapper mapper, ISaleService service, IRestaurantService resService) : base(mapper)
         {
             _service = service;
+            _resService = resService;
         }
 
 
@@ -76,6 +80,16 @@ namespace Menulo.Controllers
                 // Đã phát sinh dữ liệu → chặn xoá
                 return Conflict(new { message = ex.Message });
             }
+        }
+
+        // API 4: Lấy danh sách nhà hàng mà nhân viên sale phụ trách
+        [HttpGet("{saleId}/restaurants")]
+        [ProducesResponseType(typeof(IEnumerable<RestaurantRowDto>), 200)]
+        public async Task<ActionResult<IEnumerable<RestaurantRowDto>>> GetRestaurantsForSale(
+            string saleId,CancellationToken ct)
+        {
+            var restaurants = await _resService.GetRestaurantsBySaleIdAsync(saleId, ct);
+            return Ok(restaurants);
         }
     }
 }

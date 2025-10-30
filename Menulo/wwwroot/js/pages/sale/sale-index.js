@@ -16,7 +16,15 @@
         details: "#sale-details",
         empty: "#sale-details-empty",
         editLink: "#sale-edit-link",
-        btnDeleteInDetails: "#btn-delete-in-details"
+        btnDeleteInDetails: "#btn-delete-in-details",
+
+        // ===== SELECTORS MỚI CHO MODAL DANH SÁCH =====
+        resListModal: "#saleResListModal",
+        resListLoading: "#sale-res-loading",
+        resListEmpty: "#sale-res-empty",
+        resListContainer: "#sale-res-list-container",
+        resListTbody: "#sale-res-list-tbody",
+        resListTitle: "#saleResListTitle"
     });
 
     const STATE = {
@@ -188,6 +196,64 @@
         }
     }
 
+    // --- Danh sách nhà hàng của hàng ---
+    async function showRestaurantListModal(saleId, saleName) {
+        const modalEl = q(SELECTORS.resListModal);
+        if (!modalEl) return;
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        // 1. Reset trạng thái
+        $(SELECTORS.resListLoading).removeClass("d-none");
+        $(SELECTORS.resListEmpty).addClass("d-none");
+        $(SELECTORS.resListContainer).addClass("d-none");
+        $(SELECTORS.resListTbody).empty(); // Xóa dữ liệu cũ
+        $(SELECTORS.resListTitle).text(`Nhà hàng của: ${saleName}`);
+
+        modal.show();
+
+        try {
+            // 2. Gọi API
+            const res = await fetch(`/api/sales/${saleId}/restaurants`, {
+                headers: { "RequestVerificationToken": getXsrfToken() }
+            });
+
+            if (!res.ok) throw new Error("Load restaurant list failed");
+
+            const restaurants = await res.json(); // Mảng các RestaurantRowDto
+
+            // 3. Hiển thị dữ liệu
+            $(SELECTORS.resListLoading).addClass("d-none");
+
+            if (restaurants.length === 0) {
+                // 3a. Hiển thị thông báo rỗng
+                $(SELECTORS.resListEmpty).removeClass("d-none");
+            } else {
+                // 3b. Đổ dữ liệu vào bảng
+                let rowHtml = "";
+                restaurants.forEach((res, index) => {
+                    rowHtml += `
+                        <tr>
+                            <td class="text-center">${index + 1}</td>
+                            <td>${res.name || ""}</td>
+                            <td>${res.address || "—"}</td>
+                            <td>${res.phone || "—"}</td>
+                        </tr>
+                    `;
+                });
+
+                $(SELECTORS.resListTbody).html(rowHtml);
+                $(SELECTORS.resListContainer).removeClass("d-none");
+            }
+
+        } catch (err) {
+            console.error(err);
+            // 4. Hiển thị lỗi
+            $(SELECTORS.resListLoading).addClass("d-none");
+            $(SELECTORS.resListEmpty).removeClass("d-none").text("Lỗi khi tải dữ liệu.");
+        }
+    }
+
     function bindEvents() {
         // mở chi tiết
         document.addEventListener("click", (e) => {
@@ -201,6 +267,17 @@
         // xoá trong modal
         const btnDel = q(SELECTORS.btnDeleteInDetails);
         if (btnDel) btnDel.addEventListener("click", onClickDeleteInDetails);
+
+        // bắt sự kiện click vào link số lượng
+        document.addEventListener("click", (e) => {
+            const btn = e.target.closest(".show-res-list");
+            if (!btn) return;
+
+            e.preventDefault();
+            const saleId = btn.getAttribute("data-sale-id");
+            const saleName = btn.getAttribute("data-sale-name");
+            showRestaurantListModal(saleId, saleName);
+        });
     }
 
     // --- Khởi chạy ---

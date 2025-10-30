@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Menulo.Application.Common.Interfaces;
 using Menulo.Application.Features.Restaurants.Dtos;
 using Menulo.Application.Features.Restaurants.Interfaces;
@@ -214,6 +215,22 @@ namespace Menulo.Application.Features.Restaurants.Services
             var query = _repo.GetQueryable();
 
             return query;
+        }
+
+        public async Task<IEnumerable<RestaurantRowDto>> GetRestaurantsBySaleIdAsync(string saleId, CancellationToken ct = default)
+        {
+            var repo = _uow.Repository<Restaurant>();
+
+            var query = repo.GetQueryable()
+                .AsNoTracking()
+                .Where(r => r.CreatedBySaleId == saleId) // Lọc theo saleId
+                .OrderBy(r => r.RestaurantId); // Sắp xếp theo Id nhà hàng
+
+            // Dùng ProjectTo để AutoMapper tạo câu SQL tối ưu
+            // (Đảm bảo RestaurantProfile của bạn đã có CreateMap<Restaurant, RestaurantRowDto>)
+            return await query
+                .ProjectTo<RestaurantRowDto>(_mapper.ConfigurationProvider)
+                .ToListAsync(ct);
         }
     }
 }

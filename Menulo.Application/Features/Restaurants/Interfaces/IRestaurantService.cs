@@ -19,5 +19,10 @@ namespace Menulo.Application.Features.Restaurants.Interfaces
         Task<RestaurantDto> UpdateWithOptionalLogoAsync(UpdateRestaurantDto dto,
             Stream? newLogoStream, string? newLogoFileName, string? contentType,
             CancellationToken ct = default);
+
+        /// <summary>
+        /// Lấy danh sách (lean DTO) các nhà hàng được tạo bởi một Sale cụ thể
+        /// </summary>
+        Task<IEnumerable<RestaurantRowDto>> GetRestaurantsBySaleIdAsync(string saleId, CancellationToken ct = default);
     }
 }
