@@ -14,18 +14,17 @@ namespace Menulo.Infrastructure.Identity
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IMapper _mapper;
+        //private readonly IMapper _mapper;
         private readonly AppDbContext _context; // Giữ lại cho các truy vấn Identity phức tạp
         private readonly IUnitOfWork _uow;
 
 
         public IdentityService(UserManager<ApplicationUser> userManager, 
-            RoleManager<IdentityRole> roleManager, IMapper mapper, 
+            RoleManager<IdentityRole> roleManager, 
             AppDbContext context, IUnitOfWork uow)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _mapper = mapper;
             _context = context;
             _uow = uow;
         }
@@ -81,9 +80,22 @@ namespace Menulo.Infrastructure.Identity
             var query = from user in _userManager.Users
                         join userRole in _context.UserRoles on user.Id equals userRole.UserId
                         where userRole.RoleId == role.Id
-                        select user;
+                        join restaurant in _context.Restaurants
+                            on user.Id equals restaurant.CreatedBySaleId // Dựa trên FK
+                            into userRestaurants
+                        select new SaleRowDto
+                        {
+                            UserId = user.Id,
+                            FullName = user.FullName,
+                            Username = user.UserName ?? "-",
+                            Email = user.Email ?? "-",
+                            PhoneNumber = user.PhoneNumber ?? "-",
+                            // Đếm số lượng nhà hàng
+                            // userRestaurants là một IGrouping<...>
+                            RestaurantCount = userRestaurants.Count()
+                        };
 
-            return query.ProjectTo<SaleRowDto>(_mapper.ConfigurationProvider);
+            return query;
         }
 
         public async Task<SaleDto?> GetUserByIdAsync(string userId, CancellationToken ct)

@@ -49,7 +49,7 @@ namespace Menulo.Infrastructure
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped<IIdentityService, IdentityService>();
 
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            //services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             // Bind options từ section "GoogleOAuth"
             services.AddOptions<GoogleOAuthOptions>()

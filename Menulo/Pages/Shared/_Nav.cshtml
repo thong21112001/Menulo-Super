@@ -7,18 +7,27 @@
 <li class="nav-item">
     <a class="nav-link text-dark" asp-area="" asp-page="/Index">Trang chủ</a>
 </li>
+
 @if (User.IsInRole("admin"))
 {
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="" asp-page="/Menu/Index">Menu</a>
     </li>
 }
-<li class="nav-item">
-    <a class="nav-link text-dark" asp-area="" asp-page="/Categories/Index">Danh mục món</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link text-dark" asp-area="" asp-page="/MenuItems/Index">Danh sách món</a>
-</li>
+
+@if (User.IsInRole("superadmin") || User.IsInRole("admin"))
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-page="/Categories/Index">Danh mục món</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-page="/MenuItems/Index">Danh sách món</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-page="/RestaurantTables/Index">Danh sách bàn</a>
+    </li>
+}
+
 @if (User.IsInRole("superadmin"))
 {
     <li class="nav-item">
@@ -28,15 +37,14 @@
         <a class="nav-link text-dark" asp-area="" asp-page="/Superadmin/Sales/Index">Danh sách sale</a>
     </li>
 }
-<li class="nav-item">
-    <a class="nav-link text-dark" asp-area="" asp-page="/RestaurantTables/Index">Danh sách bàn</a>
-</li>
+
 @if (User.IsInRole("admin"))
 {
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="" asp-page="/Statistics/Index">Thống kê</a>
     </li>
 }
+
 @if (User.IsInRole("superadmin"))
 {
     <li class="nav-item">

@@ -48,7 +48,27 @@
         STATE.dt = window.initDataTable(SELECTORS.table, {
             ajaxUrl: "/api/sales/datatable",  // <<< endpoint Sale API
             renderers: {
-                actions: (id, type, row, meta) => {
+                "count-link": (data, type, row, meta) => {
+                    // 'data' chính là giá trị của 'restaurantCount'
+                    const count = parseInt(data, 10) || 0;
+
+                    if (count > 0) {
+                        // Nếu có, trả về một thẻ <a>
+                        // Chúng ta sẽ thêm data-bs-toggle sau
+                        return `
+                            <a href="#" 
+                               class="fw-bold text-primary show-res-list" 
+                               data-sale-id="${row.userId}" 
+                               data-sale-name="${row.fullName}"
+                               title="Xem danh sách ${count} nhà hàng">
+                                ${count}
+                            </a>`;
+                    }
+                    // Nếu không có, chỉ trả về text
+                    return `<span class="text-muted">0</span>`;
+                },
+
+                "actions": (id, type, row, meta) => {
                     //
                     if (!id) return "";
                     // ID của Sale là string, nên không cần chuyển đổi
