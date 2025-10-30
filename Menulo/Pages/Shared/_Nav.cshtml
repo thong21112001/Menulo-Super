@@ -8,6 +8,13 @@
     <a class="nav-link text-dark" asp-area="" asp-page="/Index">Trang chủ</a>
 </li>
 
+@if (User.IsInRole("sale"))
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-page="/RoleSale/CreateRestaurant/Index">Tạo nhà hàng</a>
+    </li>
+}
+
 @if (User.IsInRole("admin"))
 {
     <li class="nav-item">
