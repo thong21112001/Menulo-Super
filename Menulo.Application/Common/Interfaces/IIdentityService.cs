@@ -42,5 +42,11 @@ namespace Menulo.Application.Common.Interfaces
         /// (Dùng cho API Delete) Xóa user bằng ID.
         /// </summary>
         Task<IdentityResultDto> DeleteUserAsync(string userId, CancellationToken ct);
+
+        // ===== LIÊN KẾT USER VỚI NHÀ HÀNG =====
+        Task<IdentityResultDto> SetUserRestaurantIdAsync(
+            string userId,
+            int restaurantId,
+            CancellationToken ct = default);
     }
 }

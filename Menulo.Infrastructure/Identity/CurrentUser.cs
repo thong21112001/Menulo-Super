@@ -16,5 +16,12 @@ namespace Menulo.Infrastructure.Identity
             => int.TryParse(User?.FindFirst("RestaurantId")?.Value, out var id) ? id : (int?)null;
 
         public bool IsSuperAdmin => User?.IsInRole("superadmin") == true;
+
+        /// <summary>
+        /// Lấy ID (dạng string GUID) của ApplicationUser đang đăng nhập.
+        /// Trả về null nếu người dùng chưa đăng nhập.
+        /// </summary>
+        public string? UserId
+            => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     }
 }

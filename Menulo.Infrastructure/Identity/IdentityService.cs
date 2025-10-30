@@ -139,6 +139,41 @@ namespace Menulo.Infrastructure.Identity
 
 
 
+        #region Phần này dành cho Sale tạo Admin và gán nhà hàng
+        public async Task<IdentityResultDto> SetUserRestaurantIdAsync(string userId, int restaurantId, CancellationToken ct)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return IdentityResultDto.Failure(new[] { "Không tìm thấy tài khoản admin." });
+            }
+
+            // Kiểm tra nhà hàng có tồn tại không (dùng IUnitOfWork)
+            var restaurant = await _uow.Repository<Restaurant>().GetByIdAsync(restaurantId, ct);
+            if (restaurant == null)
+            {
+                return IdentityResultDto.Failure(new[] { "Không tìm thấy nhà hàng." });
+            }
+
+            // Kiểm tra xem nhà hàng này đã có admin chưa
+            // (Dựa trên UNIQUE index chúng ta đã thiết lập trong AppDbContext)
+            var existingAdmin = await _userManager.Users
+                .AnyAsync(u => u.RestaurantId == restaurantId, ct);
+
+            if (existingAdmin)
+            {
+                return IdentityResultDto.Failure(new[] { "Nhà hàng này đã được gán cho một tài khoản admin khác." });
+            }
+
+            user.RestaurantId = restaurantId;
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded
+                ? IdentityResultDto.Success(user.Id)
+                : IdentityResultDto.Failure(result.Errors.Select(e => e.Description));
+        }
+        #endregion
+
         public async Task<bool> IsUsernameTakenAsync(string username, CancellationToken ct = default)
         {
             return await _userManager.FindByNameAsync(username) != null;

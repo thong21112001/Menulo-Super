@@ -24,5 +24,10 @@ namespace Menulo.Application.Features.Restaurants.Interfaces
         /// Lấy danh sách (lean DTO) các nhà hàng được tạo bởi một Sale cụ thể
         /// </summary>
         Task<IEnumerable<RestaurantRowDto>> GetRestaurantsBySaleIdAsync(string saleId, CancellationToken ct = default);
+
+        Task<RestaurantDto> CreateRestaurantWithAdminAsync(
+            CreateRestaurantWithAdminDto dto,
+            string saleUserId,
+            CancellationToken ct = default);
     }
 }

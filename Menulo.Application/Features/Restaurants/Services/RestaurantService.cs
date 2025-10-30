@@ -14,15 +14,17 @@ namespace Menulo.Application.Features.Restaurants.Services
         private readonly IRepository<Restaurant> _repo;
         private readonly IMapper _mapper;
         private readonly IImageStorageService _images;
+        private readonly IIdentityService _identityService;
 
 
         public RestaurantService(IUnitOfWork uow,
-            IMapper mapper, IImageStorageService images)
+            IMapper mapper, IImageStorageService images, IIdentityService identityService)
         {
             _uow = uow;
             _repo = _uow.Repository<Restaurant>();
             _mapper = mapper;
             _images = images;
+            _identityService = identityService;
         }
 
         public async Task<RestaurantDto> CreateAsync(CreateRestaurantDto dto, CancellationToken ct = default)
@@ -231,6 +233,77 @@ namespace Menulo.Application.Features.Restaurants.Services
             return await query
                 .ProjectTo<RestaurantRowDto>(_mapper.ConfigurationProvider)
                 .ToListAsync(ct);
+        }
+
+        public async Task<RestaurantDto> CreateRestaurantWithAdminAsync(
+            CreateRestaurantWithAdminDto dto,
+            string saleUserId,
+            CancellationToken ct = default)
+        {
+            // BẮT ĐẦU TRANSACTION
+            // IUnitOfWork sẽ quản lý transaction cho cả DbContext VÀ IdentityContext
+            // vì chúng dùng chung một AppDbContext.
+            await _uow.BeginTransactionAsync(ct);
+            try
+            {
+                // 1. TẠO NHÀ HÀNG (Domain Entity)
+                var restaurantRepo = _uow.Repository<Restaurant>();
+                var restaurant = new Restaurant
+                {
+                    Name = dto.Name.Trim(),
+                    Address = dto.Address,
+                    Phone = dto.Phone,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBySaleId = saleUserId
+                };
+
+                await restaurantRepo.AddAsync(restaurant, ct);
+                await _uow.SaveChangesAsync(ct); // Phải Save để lấy RestaurantId
+
+                // 2. TẠO ADMIN (Identity Entity)
+                var adminResult = await _identityService.CreateUserAsync(
+                    dto.Username,
+                    dto.Password,
+                    dto.Email,
+                    dto.FullName,
+                    dto.Phone, // Lấy SĐT nhà hàng làm SĐT admin
+                    "admin"    // Gán role "admin"
+                );
+
+                if (!adminResult.Succeeded)
+                {
+                    // Ném lỗi để kích hoạt Rollback
+                    throw new InvalidOperationException(
+                        "Tạo tài khoản admin thất bại: " + string.Join(", ", adminResult.Errors)
+                    );
+                }
+
+                // 3. LIÊN KẾT ADMIN VỚI NHÀ HÀNG
+                var linkResult = await _identityService.SetUserRestaurantIdAsync(
+                    adminResult.UserId,
+                    restaurant.RestaurantId, // Lấy Id từ bước 1
+                    ct
+                );
+
+                if (!linkResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        "Liên kết tài khoản với nhà hàng thất bại: " + string.Join(", ", linkResult.Errors)
+                    );
+                }
+
+                // 4. COMMIT TRANSACTION
+                await _uow.CommitTransactionAsync(ct);
+
+                // 5. Trả về DTO
+                return _mapper.Map<RestaurantDto>(restaurant);
+            }
+            catch (Exception)
+            {
+                // 6. ROLLBACK NẾU CÓ BẤT KỲ LỖI NÀO
+                await _uow.RollbackTransactionAsync(ct);
+                throw; // Ném lại lỗi để PageModel bắt
+            }
         }
     }
 }

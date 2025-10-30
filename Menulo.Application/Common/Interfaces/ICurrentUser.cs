@@ -7,5 +7,6 @@ namespace Menulo.Application.Common.Interfaces
         ClaimsPrincipal? User { get; }
         int? RestaurantId { get; }
         bool IsSuperAdmin { get; }
+        string? UserId { get; }// Thêm ID của người dùng (ApplicationUser.Id)
     }
 }

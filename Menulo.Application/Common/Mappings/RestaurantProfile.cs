@@ -34,6 +34,9 @@ namespace Menulo.Application.Common.Mappings
             CreateMap<UpdateRestaurantDto, Restaurant>()
                 // Bỏ qua các thuộc tính null từ DTO để không ghi đè dữ liệu hiện có
                 .ForAllMembers(opt => opt.Condition((src, dest, val) => val != null));
+
+            // ===== Special Cases =====
+            CreateMap<RestaurantRequest.CreateWithAdmin, CreateRestaurantWithAdminDto>();
         }
     }
 }
