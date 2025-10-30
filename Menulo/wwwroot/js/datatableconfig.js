@@ -37,8 +37,16 @@
             const colDef = { data, name, orderable, searchable };
             if (className) colDef.className = className;
 
-            // --- Cột đặc biệt: auto index (#) ---
-            if (type === "index") {
+            // Ưu tiên 1: Tìm renderer khớp với 'data-type' (e.g., "count-link", "actions")
+            // Đây là logic "bá đạo" nhất, nó sẽ bắt được BẤT KỲ data-type tùy chỉnh nào
+            // mà bạn định nghĩa trong file ...-index.js
+            if (type && typeof renderers[type] === "function") {
+                colDef.render = renderers[type];
+                colDef.orderable = false;
+                colDef.searchable = false;
+            }
+            // Ưu tiên 2: Logic mặc định cho 'index'
+            else if (type === "index") {
                 colDef.data = null;
                 colDef.orderable = false;
                 colDef.searchable = false;

@@ -208,7 +208,7 @@
         $(SELECTORS.resListEmpty).addClass("d-none");
         $(SELECTORS.resListContainer).addClass("d-none");
         $(SELECTORS.resListTbody).empty(); // Xóa dữ liệu cũ
-        $(SELECTORS.resListTitle).text(`Nhà hàng của: ${saleName}`);
+        $(SELECTORS.resListTitle).text(`Danh sách nhà hàng đã tạo của sale: ${saleName}`);
 
         modal.show();
 
