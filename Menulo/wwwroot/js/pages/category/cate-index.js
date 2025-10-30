@@ -10,6 +10,7 @@
         empty: "#cate-details-empty",
         editLink: "#cate-edit-link",
         btnDeleteInDetails: "#btn-delete-in-details",
+        restaurantRow: ".restaurant-row"
     });
 
     const STATE = {
@@ -73,6 +74,8 @@
         $(SELECTORS.details).addClass("d-none");
         $(SELECTORS.empty).addClass("d-none");
         $(SELECTORS.editLink).addClass("d-none").attr("href", "#");
+        // Ẩn hàng "Nhà hàng" (restaurant-row) theo mặc định khi reset
+        $(detailsModalEl).find(SELECTORS.restaurantRow).addClass("d-none");
 
         detailsModal.show();
 
@@ -82,8 +85,15 @@
             const dto = await res.json();
 
             setDetailField(detailsModalEl, "categoryName", dto.categoryName);
-            setDetailField(detailsModalEl, "restaurantName", dto.restaurantName);
             setDetailField(detailsModalEl, "priority", dto.priority);
+
+            // Kiểm tra xem backend có trả về restaurantName không
+            if (dto.restaurantName) {// Nếu CÓ (là SuperAdmin):
+                // Điền dữ liệu
+                setDetailField(detailsModalEl, "restaurantName", dto.restaurantName);
+                // Hiển thị hàng "Nhà hàng"
+                $(detailsModalEl).find(SELECTORS.restaurantRow).removeClass("d-none");
+            }
 
             $(SELECTORS.editLink).removeClass("d-none").attr("href", `ds-danh-muc/${id}/chinh-sua`);
 

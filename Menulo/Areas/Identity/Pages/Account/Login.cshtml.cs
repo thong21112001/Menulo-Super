@@ -8,16 +8,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace Menulo.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, 
+            UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -66,6 +70,38 @@ namespace Menulo.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    // ***** THÊM CLAIM *****
+
+                    // Lấy thông tin user đầy đủ
+                    var user = await _userManager.FindByNameAsync(Input.Username);
+                    if (user == null)
+                    {
+                        // Trường hợp hiếm: đăng nhập thành công nhưng không tìm thấy user
+                        // (có thể do lỗi db), đăng xuất cho an toàn
+                        await _signInManager.SignOutAsync();
+                        ModelState.AddModelError(string.Empty, "Lỗi không xác định.");
+                        return Page();
+                    }
+
+                    // Xóa Claim "RestaurantId" CŨ (nếu có)
+                    // (Phòng trường hợp superadmin đổi nhà hàng cho user này)
+                    var oldClaims = await _userManager.GetClaimsAsync(user);
+                    var oldRestaurantClaim = oldClaims.FirstOrDefault(c => c.Type == "RestaurantId");
+                    if (oldRestaurantClaim != null)
+                    {
+                        await _userManager.RemoveClaimAsync(user, oldRestaurantClaim);
+                    }
+
+                    // Thêm Claim "RestaurantId" MỚI (nếu user này có)
+                    if (user.RestaurantId.HasValue)
+                    {
+                        var newRestaurantClaim = new Claim("RestaurantId", user.RestaurantId.Value.ToString());
+                        await _userManager.AddClaimAsync(user, newRestaurantClaim);
+                    }
+
+                    // Làm mới cookie đăng nhập. Để cookie MỚI chứa các claim vừa thêm
+                    await _signInManager.RefreshSignInAsync(user);
+
                     return LocalRedirect(returnUrl);
                 }
                 else
