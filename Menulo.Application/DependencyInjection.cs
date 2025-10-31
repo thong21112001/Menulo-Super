@@ -1,6 +1,8 @@
 ﻿using Menulo.Application.Common.Mappings;
 using Menulo.Application.Features.Categories.Interfaces;
 using Menulo.Application.Features.Categories.Services;
+using Menulo.Application.Features.MenuItems.Interfaces;
+using Menulo.Application.Features.MenuItems.Services;
 using Menulo.Application.Features.ResTables.Interfaces;
 using Menulo.Application.Features.ResTables.Services;
 using Menulo.Application.Features.Restaurants.Interfaces;
@@ -20,11 +22,13 @@ namespace Menulo.Application
             services.AddAutoMapper(typeof(RestaurantProfile).Assembly);
             services.AddAutoMapper(typeof(ResTableProfile).Assembly);
             services.AddAutoMapper(typeof(SaleProfile).Assembly);
+            services.AddAutoMapper(typeof(MenuItemsProfile).Assembly);
 
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<IResTablesService, ResTablesService>();
             services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<IMenuItems, MenuItemsService>();
 
             return services;
         }
