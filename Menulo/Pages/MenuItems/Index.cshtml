@@ -1,4 +1,25 @@
 ﻿@page
 @model Menulo.Pages.MenuItems.IndexModel
-@{
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions {
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
 }
+
+@{
+    ViewData["Title"] = "Món";
+    var isSuperAdmin = User.IsInRole("superadmin");
+}
+
+@section Styles {
+    <link href="~/css/datatablesconfig.css" rel="stylesheet" />
+}
+
+<h3>Danh sách món</h3>
+
+<p>
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
+</p>

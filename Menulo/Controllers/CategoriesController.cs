@@ -4,6 +4,7 @@ using Menulo.Application.Features.Categories.Interfaces;
 using Menulo.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using static Menulo.Application.Common.Contracts.DataTables.DataTablesModels;
 
@@ -67,6 +68,26 @@ namespace Menulo.Controllers
         {
             await _service.DeleteAsync(id, ct);
             return NoContent();
+        }
+
+        // API 4: Lấy danh mục dựa trên id nhà hàng (dành cho Superadmin)
+        [HttpGet("for-restaurant/{restaurantId:int}")]
+        [ProducesResponseType(typeof(IEnumerable<object>), 200)]
+        public async Task<IActionResult> GetCategoriesForRestaurant(int restaurantId, CancellationToken ct)
+        {
+            // Lấy IQueryable đã được lọc (bảo mật)
+            var query = _service.GetQueryableCategoriesForCurrentUser();
+
+            // Lọc thêm theo restaurantId mà Superadmin đã chọn
+            // (Nếu admin gọi, nó sẽ lọc 2 lần, vẫn an toàn)
+            var categories = await query
+                .Where(c => c.RestaurantId == restaurantId)
+                .Select(c => new { c.CategoryId, c.CategoryName, c.Priority }) // Trả về DTO ẩn danh
+                .OrderBy(c => c.Priority)
+                .ThenBy(c => c.CategoryName)
+                .ToListAsync(ct);
+
+            return Ok(categories);
         }
     }
 }

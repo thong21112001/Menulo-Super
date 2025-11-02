@@ -16,8 +16,4 @@
     <ProjectReference Include="..\Menulo.Domain\Menulo.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\MenuItems\Dtos\" />
-  </ItemGroup>
-
 </Project>

@@ -1,0 +1,18 @@
+﻿using Menulo.Application.Features.MenuItems.Dtos;
+
+namespace Menulo.Application.Features.MenuItems.Interfaces
+{
+    public interface IMenuItemsService
+    {
+        /// <summary>
+        /// Tạo một món ăn mới, xử lý việc tải ảnh lên
+        /// </summary>
+        Task<MenuItemDto> CreateMenuItemAsync(
+            CreateMenuItemDto dto,
+            Stream? imageStream,      // Service chỉ nhận Stream (sạch)
+            string? imageFileName,    // Tên file gốc (để lấy extension)
+            string? contentType,      // vd: "image/jpeg"
+            CancellationToken ct = default
+        );
+    }
+}

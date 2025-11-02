@@ -1,4 +1,149 @@
 ﻿@page
 @model Menulo.Pages.MenuItems.CreateModel
 @{
+    ViewData["Title"] = "Tạo mới món ăn";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<hr />
+
+<form id="createBatchForm" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="row mb-3">
+        @if (Model.IsSuperAdmin)
+        {
+            <div class="col-md-6">
+                <label class="control-label">Chọn nhà hàng</label>
+                <select id="restaurantSelect" class="form-select" asp-items="@Model.RestaurantList">
+                    <option value="">-- Chọn nhà hàng --</option>
+                </select>
+            </div>
+        }
+
+        <div class="col-md-6">
+            <label asp-for="CategoryId" class="control-label"></label>
+            <select asp-for="CategoryId" id="categorySelect" class="form-select" asp-items="@Model.CategoryList">
+                <option value="">-- Chọn một danh mục --</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+    </div>
+
+    @* Đây là nơi dùng để thêm nhiều món hơn thay vì 1 *@
+    <div id="items-container">
+        <div class="row fw-bold d-none d-md-flex mb-2">
+            <div class="col-md-3">Tên món</div>
+            <div class="col-md-2">Giá</div>
+            <div class="col-md-3">Mô tả</div>
+            <div class="col-md-3">Hình ảnh</div>
+            <div class="col-md-1"></div>
+        </div>
+
+        @* Dùng vòng lặp for (không phải foreach) để giữ binding index *@
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="row item-row mb-3 align-items-center p-2 border rounded">
+                <div class="form-group col-md-3">
+                    <label asp-for="Items[i].ItemName" class="control-label d-md-none">Tên món</label>
+                    <input asp-for="Items[i].ItemName" class="form-control" placeholder="Tên món ăn" />
+                    <span asp-validation-for="Items[i].ItemName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label asp-for="Items[i].Price" class="control-label d-md-none">Giá</label>
+                    <input asp-for="Items[i].Price" class="form-control price-input"
+                           type="text"
+                           placeholder="Để trống là thời giá"
+                           oninput="formatAndValidatePrice(this)"
+                           onkeypress="return allowOnlyNumbers(event)" novalidate />
+                    <span asp-validation-for="Items[i].Price" class="text-danger d-block"></span>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label asp-for="Items[i].Description" class="control-label d-md-none">Mô tả</label>
+                    <input asp-for="Items[i].Description" class="form-control" placeholder="Mô tả ngắn (vd: cay)" />
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label asp-for="Items[i].Image" class="control-label d-md-none">Hình ảnh</label>
+                    <input type="file" asp-for="Items[i].Image" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="col-md-1 text-end">
+                    <button type="button" class="btn btn-sm btn-danger remove-item-btn" title="Xóa hàng này">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <button type="button" id="add-item-btn" class="btn btn-success">
+            <i class="bi bi-plus"></i> Thêm món
+        </button>
+        <div class="form-group">
+            <input type="submit" value="Lưu tất cả" class="btn btn-primary" />
+            <a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </div>
+</form>
+
+<div id="item-template" class="d-none">
+    <div class="row item-row mb-3 align-items-center p-2 border rounded">
+        <div class="form-group col-md-3">
+            <label class="control-label d-md-none">Tên món</label>
+            <input class="form-control" placeholder="Tên món ăn" data-name="ItemName" />
+            <span class="text-danger" data-valmsg-for="ItemName"></span>
+        </div>
+        <div class="form-group col-md-2">
+            <label class="control-label d-md-none">Giá</label>
+            <input class="form-control price-input" type="text" placeholder="Để trống là thời giá"
+                   data-name="Price"
+                   oninput="formatAndValidatePrice(this)"
+                   onkeypress="return allowOnlyNumbers(event)" novalidate />
+            <span class="text-danger d-block" data-valmsg-for="Price"></span>
+        </div>
+        <div class="form-group col-md-3">
+            <label class="control-label d-md-none">Mô tả</label>
+            <input class="form-control" placeholder="Mô tả ngắn (vd: cay)" data-name="Description" />
+        </div>
+        <div class="form-group col-md-3">
+            <label class="control-label d-md-none">Hình ảnh</label>
+            <input type="file" class="form-control" accept="image/*" data-name="Image" />
+        </div>
+        <div class="col-md-1 text-end">
+            <button type="button" class="btn btn-sm btn-danger remove-item-btn" title="Xóa hàng này">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/pages/shared/valid_submit_create.js"></script>
+    <script src="~/js/pages/shared/validate-price.js"></script>
+    <script src="~/js/pages/menu-items/create-batch-items.js"></script>
+    @if (Model.IsSuperAdmin)
+    {
+        <script src="~/js/pages/menu-items/get-cate-with-rolesa.js"></script>
+    }
+
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
 }

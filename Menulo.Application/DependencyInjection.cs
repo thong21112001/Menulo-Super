@@ -28,7 +28,7 @@ namespace Menulo.Application
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<IResTablesService, ResTablesService>();
             services.AddScoped<ISaleService, SaleService>();
-            services.AddScoped<IMenuItems, MenuItemsService>();
+            services.AddScoped<IMenuItemsService, MenuItemsService>();
 
             return services;
         }
