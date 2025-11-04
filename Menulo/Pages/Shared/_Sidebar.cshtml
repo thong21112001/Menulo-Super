@@ -1,0 +1,154 @@
+﻿@using Menulo.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@functions {
+    // [CẢI TIẾN] Hàm kiểm tra link active đã được làm gọn và xử lý tốt hơn.
+    // page: đường dẫn cần kiểm tra (vídụ: "/categories").
+    // exact: nếu true, chỉ khớp chính xác; nếu false, khớp cả đường dẫn con.
+    bool IsActive(string page, bool exact = false)
+    {
+        var currentPath = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
+        var matchPath = page.ToLowerInvariant();
+
+        // Xử lý trường hợp đặc biệt cho trang chủ ("/") để nó không khớp với mọi trang khác
+        if (matchPath == "/")
+        {
+            return currentPath == "/";
+        }
+
+        // Nếu so khớp chính xác
+        if (exact)
+        {
+            return currentPath == matchPath;
+        }
+
+        // Mặc định: so khớp cả đường dẫn con (ví dụ: /products sẽ active cho /products/edit/1)
+        return currentPath.StartsWith(matchPath);
+    }
+
+    // Hàm kiểm tra xem một menu cha (collapse) có chứa trang đang active hay không.
+    // pages: danh sách các đường dẫn con thuộc menu cha đó.
+    bool IsParentActive(params string[] pages)
+    {
+        var currentPath = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
+        foreach (var page in pages)
+        {
+            var matchPath = page.ToLowerInvariant();
+            // Bỏ qua các chuỗi rỗng hoặc chỉ là "/"
+            if (string.IsNullOrEmpty(matchPath) || matchPath == "/") continue;
+            if (currentPath.StartsWith(matchPath))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+@* UI SIDEBAR MỚI *@
+<div class="sidebar d-flex flex-column p-0" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/" class="d-flex align-items-center">
+            <i class="fa-solid fa-store me-2 text-primary"></i>
+            <span class="logo-text">MENULO</span>
+        </a>
+    </div>
+
+    <ul class="nav flex-column flex-grow-1 mt-3">
+
+        <!-- Link chung -->
+        <li class="nav-item">
+            <a class="nav-link @(IsActive("/", exact: true) ? "active" : "")" href="/">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span class="nav-link-text">Bảng điều khiển</span>
+            </a>
+        </li>
+
+        <!-- Role: Superadmin -->
+        @if (User.IsInRole("superadmin"))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(IsActive("/Superadmin/Sales") ? "active" : "")" href="/Superadmin/Sales/Index" title="Danh sách Sale">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span class="nav-link-text">Quản lý Sale</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(IsActive("/Superadmin/Restaurants") ? "active" : "")" href="/Superadmin/Restaurants/Index" title="Danh sách Nhà hàng">
+                    <i class="fa-solid fa-building"></i>
+                    <span class="nav-link-text">Quản lý Nhà hàng</span>
+                </a>
+            </li>
+        }
+
+        <!-- Role: Sale -->
+        @if (User.IsInRole("sale"))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(IsActive("/Sales/Index") ? "active" : "")" href="/Sales/Index" title="Nhà hàng của tôi">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="nav-link-text">Nhà hàng của tôi</span>
+                </a>
+            </li>
+        }
+
+        <!-- Role: Admin (Chủ nhà hàng) -->
+        @if (User.IsInRole("admin"))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(IsActive("/Statistics") ? "active" : "")" href="/Statistics/Index" title="Thống kê">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="nav-link-text">Thống kê</span>
+                </a>
+            </li>
+        }
+
+        <!-- Role: Superadmin hoặc Admin (Menu cha) -->
+        @if (User.IsInRole("superadmin") || User.IsInRole("admin"))
+        {
+            // Xác định xem menu "Quản lý" có nên active và mở rộng hay không
+            var isManagementParentActive = IsParentActive(
+            "/Categories",
+            "/MenuItems",
+            "/RestaurantTables"
+            );
+
+            <li class="nav-item">
+                <a class="nav-link @(isManagementParentActive ? "active" : "")" href="#managementCollapse" data-bs-toggle="collapse" role="button"
+                   aria-expanded="@(isManagementParentActive ? "true" : "false")" aria-controls="managementCollapse">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="nav-link-text">Quản lý Nhà hàng</span>
+                </a>
+
+                <div class="collapse @(isManagementParentActive ? "show" : "")" id="managementCollapse">
+                    <ul class="nav flex-column nav-submenu">
+                        <li class="nav-item">
+                            <a class="nav-link @(IsActive("/Categories") ? "active" : "")" href="/Categories/Index" title="Danh mục món">
+                                <i class="fa-solid fa-tags"></i>
+                                <span class="nav-link-text">Danh mục món</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(IsActive("/MenuItems") ? "active" : "")" href="/MenuItems/Index" title="Danh sách món">
+                                <i class="fa-solid fa-utensils"></i>
+                                <span class="nav-link-text">Danh sách món</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(IsActive("/RestaurantTables") ? "active" : "")" href="/RestaurantTables/Index" title="Danh sách bàn">
+                                <i class="fa-solid fa-chair"></i>
+                                <span class="nav-link-text">Danh sách bàn</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        }
+    </ul>
+
+    <div class="p-3 mt-auto border-top">
+        <small class="text-muted">© 2025 Menulo</small>
+    </div>
+</div>

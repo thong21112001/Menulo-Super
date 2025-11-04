@@ -1,10 +1,78 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Dashboard Section -->
+<div id="dashboard" class="content-section active">
+    <h2 class="mb-4">Bảng điều khiển</h2>
+    <div class="row g-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="fa-solid fa-dollar-sign bg-success-subtle text-success"></i>
+                    <div class="ms-3">
+                        <p class="card-text text-muted mb-1">Tổng doanh thu</p>
+                        <h4 class="card-title mb-0">125.660.000₫</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="fa-solid fa-receipt bg-info-subtle text-info"></i>
+                    <div class="ms-3">
+                        <p class="card-text text-muted mb-1">Đơn hàng mới</p>
+                        <h4 class="card-title mb-0">345</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="fa-solid fa-users bg-warning-subtle text-warning"></i>
+                    <div class="ms-3">
+                        <p class="card-text text-muted mb-1">Khách hàng mới</p>
+                        <h4 class="card-title mb-0">82</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="fa-solid fa-arrow-trend-up bg-danger-subtle text-danger"></i>
+                    <div class="ms-3">
+                        <p class="card-text text-muted mb-1">Lượt truy cập</p>
+                        <h4 class="card-title mb-0">12,543</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mt-2">
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Doanh thu theo tháng</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Tỷ trọng danh mục</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

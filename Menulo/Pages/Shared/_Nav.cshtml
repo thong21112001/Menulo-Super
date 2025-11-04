@@ -4,57 +4,53 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<li class="nav-item">
-    <a class="nav-link text-dark" asp-area="" asp-page="/Index">Trang chủ</a>
-</li>
+<nav class="navbar navbar-expand-lg bg-body-tertiary rounded-3 mb-4 p-2 shadow-sm">
+    <div class="container-fluid">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="btn btn-light d-lg-none" type="button" id="mobile-sidebar-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-@if (User.IsInRole("sale"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/RoleSale/CreateRestaurant/Index">Tạo nhà hàng</a>
-    </li>
-}
+        <!-- Desktop Sidebar Toggle -->
+        <button class="btn btn-light sidebar-toggle-btn d-none d-lg-block" type="button"
+                id="desktop-sidebar-toggle">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
 
-@if (User.IsInRole("admin"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Menu/Index">Menu</a>
-    </li>
-}
+        <!-- Search Form (Hidden on Mobile) -->
+        <form class="d-none d-lg-flex ms-3" role="search">
+            <input class="form-control me-2" type="search" placeholder="Tìm kiếm..." aria-label="Search">
+        </form>
 
-@if (User.IsInRole("superadmin") || User.IsInRole("admin"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Categories/Index">Danh mục món</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/MenuItems/Index">Danh sách món</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/RestaurantTables/Index">Danh sách bàn</a>
-    </li>
-}
+        <!-- Right Aligned Items -->
+        <div class="d-flex align-items-center ms-auto">
+            <button class="btn btn-toggle-theme me-3" id="theme-toggle">
+                <i class="fa-solid fa-sun" id="theme-icon-sun"></i>
+                <i class="fa-solid fa-moon d-none" id="theme-icon-moon"></i>
+            </button>
 
-@if (User.IsInRole("superadmin"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Superadmin/Restaurants/Index">Danh sách nhà hàng</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Superadmin/Sales/Index">Danh sách sale</a>
-    </li>
-}
+            <div class="dropdown">
+                <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="https://placehold.co/32x32/EFEFEF/AAAAAA?text=A" alt="mdo" width="32" height="32"
+                         class="rounded-circle">
+                </a>
 
-@if (User.IsInRole("admin"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Statistics/Index">Thống kê</a>
-    </li>
-}
-
-@if (User.IsInRole("superadmin"))
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-    </li>
-}
+                <!-- SỬA LỖI: HIỂN THỊ TÊN USER VÀ DÙNG FORM ĐĂNG XUẤT -->
+                <ul class="dropdown-menu dropdown-menu-end text-small">
+                    <li><h6 class="dropdown-header">Xin chào, @UserManager.GetUserName(User)!</h6></li>
+                    <li><a id="manage" class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Hồ sơ">Hồ sơ</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <!-- Dùng FORM cho an toàn, nhưng style như <a> -->
+                        <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
+                            <button id="logout" type="submit" class="dropdown-item">Đăng xuất</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
