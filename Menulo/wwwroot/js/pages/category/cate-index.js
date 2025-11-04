@@ -48,7 +48,7 @@
                     if (!id) return "";
                     return `
                     <div class="d-flex justify-content-center gap-1">
-                      <a href="ds-danh-muc/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
+                      <a href="/ds-danh-muc/${id}/chinh-sua" class="btn btn-sm btn-primary" title="Sửa">
                         <i class="bi bi-pencil-square"></i>
                       </a>
                       <a href="#" class="btn btn-sm btn-info btn-details" data-id="${id}" title="Xem">
@@ -95,7 +95,7 @@
                 $(detailsModalEl).find(SELECTORS.restaurantRow).removeClass("d-none");
             }
 
-            $(SELECTORS.editLink).removeClass("d-none").attr("href", `ds-danh-muc/${id}/chinh-sua`);
+            $(SELECTORS.editLink).removeClass("d-none").attr("href", `/ds-danh-muc/${id}/chinh-sua`);
 
             $(SELECTORS.loading).addClass("d-none");
             $(SELECTORS.details).removeClass("d-none");

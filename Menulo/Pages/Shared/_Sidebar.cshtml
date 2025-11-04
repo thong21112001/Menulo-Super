@@ -70,13 +70,13 @@
         @if (User.IsInRole("superadmin"))
         {
             <li class="nav-item">
-                <a class="nav-link @(IsActive("/Superadmin/Sales") ? "active" : "")" href="/Superadmin/Sales/Index" title="Danh sách Sale">
+                <a class="nav-link @(IsActive("/sa/ds-sale") ? "active" : "")" href="/sa/ds-sale" title="Danh sách Sale">
                     <i class="fa-solid fa-user-tie"></i>
                     <span class="nav-link-text">Quản lý Sale</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(IsActive("/Superadmin/Restaurants") ? "active" : "")" href="/Superadmin/Restaurants/Index" title="Danh sách Nhà hàng">
+                <a class="nav-link @(IsActive("/sa/ds-nha-hang") ? "active" : "")" href="/sa/ds-nha-hang" title="Danh sách Nhà hàng">
                     <i class="fa-solid fa-building"></i>
                     <span class="nav-link-text">Quản lý Nhà hàng</span>
                 </a>
@@ -87,7 +87,7 @@
         @if (User.IsInRole("sale"))
         {
             <li class="nav-item">
-                <a class="nav-link @(IsActive("/Sales/Index") ? "active" : "")" href="/Sales/Index" title="Nhà hàng của tôi">
+                <a class="nav-link @(IsActive("/sale/ds-nha-hang") ? "active" : "")" href="/sale/ds-nha-hang" title="Nhà hàng của tôi">
                     <i class="fa-solid fa-store"></i>
                     <span class="nav-link-text">Nhà hàng của tôi</span>
                 </a>
@@ -110,9 +110,9 @@
         {
             // Xác định xem menu "Quản lý" có nên active và mở rộng hay không
             var isManagementParentActive = IsParentActive(
-            "/Categories",
+            "/ds-danh-muc",
             "/MenuItems",
-            "/RestaurantTables"
+            "/ds-ban"
             );
 
             <li class="nav-item">
@@ -125,7 +125,7 @@
                 <div class="collapse @(isManagementParentActive ? "show" : "")" id="managementCollapse">
                     <ul class="nav flex-column nav-submenu">
                         <li class="nav-item">
-                            <a class="nav-link @(IsActive("/Categories") ? "active" : "")" href="/Categories/Index" title="Danh mục món">
+                            <a class="nav-link @(IsActive("/ds-danh-muc") ? "active" : "")" href="/ds-danh-muc" title="Danh mục món">
                                 <i class="fa-solid fa-tags"></i>
                                 <span class="nav-link-text">Danh mục món</span>
                             </a>
@@ -137,7 +137,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(IsActive("/RestaurantTables") ? "active" : "")" href="/RestaurantTables/Index" title="Danh sách bàn">
+                            <a class="nav-link @(IsActive("/ds-ban") ? "active" : "")" href="/ds-ban" title="Danh sách bàn">
                                 <i class="fa-solid fa-chair"></i>
                                 <span class="nav-link-text">Danh sách bàn</span>
                             </a>
