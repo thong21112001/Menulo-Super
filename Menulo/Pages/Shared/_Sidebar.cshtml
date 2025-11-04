@@ -72,13 +72,13 @@
             <li class="nav-item">
                 <a class="nav-link @(IsActive("/sa/ds-sale") ? "active" : "")" href="/sa/ds-sale" title="Danh sách Sale">
                     <i class="fa-solid fa-user-tie"></i>
-                    <span class="nav-link-text">Quản lý Sale</span>
+                    <span class="nav-link-text">Danh sách Sale</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(IsActive("/sa/ds-nha-hang") ? "active" : "")" href="/sa/ds-nha-hang" title="Danh sách Nhà hàng">
                     <i class="fa-solid fa-building"></i>
-                    <span class="nav-link-text">Quản lý Nhà hàng</span>
+                    <span class="nav-link-text">Danh sách Nhà hàng</span>
                 </a>
             </li>
         }
@@ -87,9 +87,9 @@
         @if (User.IsInRole("sale"))
         {
             <li class="nav-item">
-                <a class="nav-link @(IsActive("/sale/ds-nha-hang") ? "active" : "")" href="/sale/ds-nha-hang" title="Nhà hàng của tôi">
+                <a class="nav-link @(IsActive("/sale/ds-nha-hang") ? "active" : "")" href="/sale/ds-nha-hang" title="Nhà hàng đã tạo">
                     <i class="fa-solid fa-store"></i>
-                    <span class="nav-link-text">Nhà hàng của tôi</span>
+                    <span class="nav-link-text">Nhà hàng đã tạo</span>
                 </a>
             </li>
         }
@@ -111,7 +111,7 @@
             // Xác định xem menu "Quản lý" có nên active và mở rộng hay không
             var isManagementParentActive = IsParentActive(
             "/ds-danh-muc",
-            "/MenuItems",
+            "/ds-mon-an",
             "/ds-ban"
             );
 
@@ -131,7 +131,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(IsActive("/MenuItems") ? "active" : "")" href="/MenuItems/Index" title="Danh sách món">
+                            <a class="nav-link @(IsActive("/ds-mon-an") ? "active" : "")" href="/ds-mon-an" title="Danh sách món">
                                 <i class="fa-solid fa-utensils"></i>
                                 <span class="nav-link-text">Danh sách món</span>
                             </a>

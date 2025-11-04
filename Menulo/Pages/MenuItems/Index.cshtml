@@ -23,3 +23,55 @@
 <p>
     <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus"></i> Tạo mới</a>
 </p>
+
+<table id="menuITable" class="table table-striped table-bordered nowrap" style="width:100%">
+    <thead>
+        <tr>
+            <th data-type="index" class="stt text-center">#</th>
+
+            @if (isSuperAdmin)
+            {
+                <th data-data="restaurantName" data-name="Restaurant.Name">Nhà hàng</th>
+            }
+
+            <th data-data="categoryName" data-name="CategoryName">Tên món</th>
+
+            <th data-data="categoryName" data-name="CategoryName">Danh mục món</th>
+
+            <th data-data="categoryName" data-name="CategoryName">Thông tin món</th>
+
+            <th data-data="categoryName" data-name="CategoryName">Giá tiền món</th>
+
+            <th data-data="priority" data-name="CategoryPriority">Trạng thái</th>
+
+            <th data-type="actions"
+                data-data="categoryId"
+                data-name="CategoryId"
+                class="no-sort text-center"
+                style="min-width: 120px; max-width: 160px;">
+                Thao tác
+            </th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<partial name="_itemDetails" />
+
+@section Scripts {
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/datatableconfig.js"></script>
+    <script src="~/js/pages/menu-items/menu-items-index.js"></script>
+    @{
+        var alert = TempData.GetAlert();
+        if (alert != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: '@alert.Icon',
+                    title: '@Html.Raw(alert.Message)'
+                });
+            </script>
+        }
+    }
+}
