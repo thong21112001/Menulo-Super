@@ -37,6 +37,14 @@
             const colDef = { data, name, orderable, searchable };
             if (className) colDef.className = className;
 
+            // Nếu <th> có data-type, hãy thêm nó vào <td> được tạo ra
+            // CHÚ Ý: data-type sẽ luôn là lowercase ở <td> (dùng cho selector JS)
+            if (type) {
+                colDef.createdCell = function (td, cellData, rowData, row, col) {
+                    $(td).attr('data-type', type);
+                }
+            }
+
             // Ưu tiên 1: Tìm renderer khớp với 'data-type' (e.g., "count-link", "actions")
             // Đây là logic "bá đạo" nhất, nó sẽ bắt được BẤT KỲ data-type tùy chỉnh nào
             // mà bạn định nghĩa trong file ...-index.js

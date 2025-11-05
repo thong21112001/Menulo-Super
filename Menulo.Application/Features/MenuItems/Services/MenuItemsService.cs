@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Menulo.Application.Common.Interfaces;
 using Menulo.Application.Features.MenuItems.Dtos;
 using Menulo.Application.Features.MenuItems.Interfaces;
@@ -14,17 +15,20 @@ namespace Menulo.Application.Features.MenuItems.Services
         private readonly IImageStorageService _imageService;
         private readonly IRepository<Category> _categoryRepo;
         private readonly IRepository<MenuItem> _menuItemRepo;
+        private readonly ICurrentUser _currentUser;
 
         public MenuItemsService(
             IUnitOfWork uow,
             IMapper mapper,
-            IImageStorageService imageService)
+            IImageStorageService imageService,
+            ICurrentUser currentUser)
         {
             _uow = uow;
             _mapper = mapper;
             _imageService = imageService;
             _categoryRepo = _uow.Repository<Category>();
             _menuItemRepo = _uow.Repository<MenuItem>();
+            _currentUser = currentUser;
         }
 
 
@@ -80,6 +84,58 @@ namespace Menulo.Application.Features.MenuItems.Services
             resultDto = resultDto with { CategoryName = category.CategoryName };
 
             return resultDto;
+        }
+
+        public IQueryable<MenuItemRowDto> GetQueryableMenuItemsForCurrentUser()
+        {
+            var query = _menuItemRepo.GetQueryable()
+                .AsNoTracking()
+                .Where(mi => mi.IsDeleted == false); //Logic lọc món đã xóa
+
+            if (!_currentUser.IsSuperAdmin && _currentUser.RestaurantId is int rid)
+            {
+                query = query.Where(mi => mi.RestaurantId == rid);
+            }
+
+            var dtoQuery = query.ProjectTo<MenuItemRowDto>(_mapper.ConfigurationProvider);
+
+            // Ẩn RestaurantName nếu không phải SuperAdmin (bảo mật JSON)
+            if (!_currentUser.IsSuperAdmin)
+            {
+                dtoQuery = dtoQuery.Select(dto => new MenuItemRowDto
+                {
+                    ItemId = dto.ItemId,
+                    ItemName = dto.ItemName,
+                    Description = dto.Description,
+                    Price = dto.Price,
+                    IsAvailable = dto.IsAvailable,
+                    CategoryId = dto.CategoryId,
+                    CategoryName = dto.CategoryName,
+                    RestaurantId = dto.RestaurantId,
+                    RestaurantName = null
+                });
+            }
+
+            return dtoQuery;
+        }
+
+        public async Task<bool> ToggleMenuItemAvailabilityAsync(int menuItemId, CancellationToken ct = default)
+        {
+            var query = _menuItemRepo.GetQueryable();
+
+            if (!_currentUser.IsSuperAdmin && _currentUser.RestaurantId is int rid)
+            {
+                query = query.Where(mi => mi.RestaurantId == rid);
+            }
+
+            var menuItem = await query.FirstOrDefaultAsync(mi => mi.ItemId == menuItemId, ct)
+                           ?? throw new KeyNotFoundException("Không tìm thấy món ăn.");
+
+            menuItem.IsAvailable = !menuItem.IsAvailable;
+
+            await _uow.SaveChangesAsync(ct);
+
+            return menuItem.IsAvailable;
         }
     }
 }
