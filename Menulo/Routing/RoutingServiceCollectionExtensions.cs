@@ -16,6 +16,7 @@ namespace Menulo.Routing
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, SuperadminSalesRoutes>();
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, RoleSaleRoutes>();
             services.AddTransient<IConfigureOptions<RazorPagesOptions>, MenuItemsRoutes>();
+            services.AddTransient<IConfigureOptions<RazorPagesOptions>, MenuRestaurantRoutes>();
             return services;
         }
     }

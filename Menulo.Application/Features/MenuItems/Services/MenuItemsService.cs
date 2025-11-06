@@ -137,5 +137,48 @@ namespace Menulo.Application.Features.MenuItems.Services
 
             return menuItem.IsAvailable;
         }
+
+        public async Task<List<MenuCategoryGroupDto>> GetMenuForCurrentUserAsync(CancellationToken ct = default)
+        {
+            // 1. Lấy Tenant ID (Bảo mật)
+            var restaurantId = _currentUser.RestaurantId
+                ?? throw new UnauthorizedAccessException("Người dùng không được gán cho nhà hàng nào.");
+
+            // 2. Xây dựng truy vấn (Query)
+            var itemsQuery = _menuItemRepo.GetQueryable()
+                .AsNoTracking()
+                .Where(m =>
+                    m.RestaurantId == restaurantId && // Lọc theo tenant
+                    m.IsDeleted == false &&          // Chỉ món đang bán
+                    m.IsAvailable == true)           // Chỉ món đang có
+                .Include(m => m.Category) // Cần Include để GroupBy và OrderBy
+                // 3. Sắp xếp trong CSDL (hiệu năng cao)
+                .OrderBy(m => m.Category.Priority)
+                .ThenBy(m => m.Category.CategoryName)
+                .ThenBy(m => m.ItemId);
+
+            // 4. Tải dữ liệu (chỉ của 1 nhà hàng, đã lọc)
+            var allItems = await itemsQuery.ToListAsync(ct);
+
+            // 5. Nhóm (Group) và Map (ánh xạ) trong bộ nhớ
+            //    (Hiệu quả vì chỉ làm trên danh sách đã lọc)
+            var groupedMenu = allItems
+                // Group theo Category entity (đã Include)
+                .GroupBy(item => item.Category)
+                .Select(group => new MenuCategoryGroupDto(
+                    CategoryId: group.Key.CategoryId,
+                    CategoryName: group.Key.CategoryName,
+                    CategoryPriority: group.Key.Priority,
+                    Items: group.Select(item => new MenuItemCardDto( // Map sang DTO
+                                item.ItemId,
+                                item.ItemName,
+                                item.Price,
+                                item.ImageData // Dùng ImageUrl "sạch"
+                           )).ToList()
+                ))
+                .ToList();
+
+            return groupedMenu;
+        }
     }
 }

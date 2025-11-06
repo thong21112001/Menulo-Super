@@ -25,5 +25,11 @@ namespace Menulo.Application.Features.MenuItems.Interfaces
         /// </summary>
         /// <returns>Trạng thái IsAvailable mới</returns>
         Task<bool> ToggleMenuItemAvailabilityAsync(int menuItemId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Lấy toàn bộ menu cho nhà hàng của user hiện tại,
+        /// đã được lọc, sắp xếp và nhóm theo danh mục.
+        /// </summary>
+        Task<List<MenuCategoryGroupDto>> GetMenuForCurrentUserAsync(CancellationToken ct = default);
     }
 }

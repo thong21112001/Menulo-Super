@@ -1,0 +1,58 @@
+﻿@page
+@model Menulo.Pages.MenuRestaurant.IndexModel
+
+@{
+    ViewData["Title"] = "Menu";
+}
+
+@section Styles {
+    <link href="~/css/pages/menu-restaurant/responsive-menu.css" rel="stylesheet" />
+}
+
+@foreach (var group in Model.MenuGroups)
+{
+    <section class="mb-2">
+        <h2 class="h4 text-primary border-bottom pb-2 text-uppercase">@group.CategoryName</h2>
+
+        <div class="row">
+            @foreach (var item in group.Items)
+            {
+                <div class="col-lg-2 col-md-4 col-6 mb-2">
+                    <div class="card shadow-sm">
+
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <div class="img-container">
+                                <img src="@(item.ImageUrl ?? "/images/image.png")"
+                                     class="img-fluid" alt="@item.ItemName" loading="lazy">
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title">@item.ItemName</h5>
+                            <p class="card-text">
+                                @if (item.Price == 0 || item.Price == null)
+                                {
+                                    <strong>Theo thời giá</strong>
+                                }
+                                else
+                                {
+                                    <strong>@String.Format("{0:0,0 đ}", item.Price)</strong>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (!Model.MenuGroups.Any())
+{
+    <div classs="alert alert-info">
+        <h4>Chưa có món ăn nào.</h4>
+        <p>Hiện tại nhà hàng của bạn chưa có món ăn nào được bật "Đang bán". Vui lòng vào trang "Danh sách món" để thêm hoặc bật món ăn.</p>
+        <a asp-page="/MenuItems/Index" class="btn btn-primary">Đi tới trang Quản lý món</a>
+    </div>
+}
