@@ -1,5 +1,78 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿<!-- Details Modal -->
+<div class="modal fade" id="menuIDetailsModal" tabindex="-1"
+     aria-labelledby="resDetailsTitle" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="resDetailsTitle">
+                    <i class="bi bi-info-circle me-1"></i> Chi tiết món ăn
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Loading -->
+                <div id="menui-details-loading" class="text-center py-5 d-none">
+                    <div class="spinner-border" role="status" aria-hidden="true"></div>
+                    <div class="mt-2">Đang tải...</div>
+                </div>
+
+                <!-- Details -->
+                <div id="menui-details" class="d-none" data-id="">
+                    <div class="row g-3 align-items-start">
+
+                        <!-- Logo / Placeholder -->
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-2 text-center">
+                                <img id="menui-logo"
+                                     src=""
+                                     alt="Hình món ăn"
+                                     class="img-fluid rounded-3 d-none"
+                                     style="max-height:220px; object-fit:contain;">
+
+                                <div id="menui-logo-empty" class="text-muted py-5">
+                                    <i class="bi bi-image me-1"></i> Chưa có logo
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fields -->
+                        <div class="col-md-8">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Danh mục món</dt>
+                                <dd class="col-sm-8 fw-semibold" data-field="categoryName"></dd>
+
+                                <dt class="col-sm-4">Tên món</dt>
+                                <dd class="col-sm-8 fw-semibold" data-field="name"></dd>
+
+                                <dt class="col-sm-4">Thông tin món</dt>
+                                <dd class="col-sm-8" data-field="description"></dd>
+
+                                <dt class="col-sm-4">Đơn giá</dt>
+                                <dd class="col-sm-8" data-field="price"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div id="menui-details-empty" class="alert alert-warning d-none mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Không tìm thấy dữ liệu.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <a id="menui-edit-link" class="btn btn-warning d-none">
+                    <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                </a>
+                <button id="btn-delete-in-details" class="btn btn-danger d-none">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+
+        </div>
+    </div>
+</div>

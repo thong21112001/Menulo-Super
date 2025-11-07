@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Menulo.Application.Common.Interfaces;
 using Menulo.Application.Features.MenuItems.Dtos;
 using Menulo.Application.Features.MenuItems.Interfaces;
+using Menulo.Application.Features.Restaurants.Dtos;
 using Menulo.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -106,7 +107,7 @@ namespace Menulo.Application.Features.MenuItems.Services
                 {
                     ItemId = dto.ItemId,
                     ItemName = dto.ItemName,
-                    Description = dto.Description ?? "",
+                    Description = dto.Description,
                     Price = dto.Price,
                     IsAvailable = dto.IsAvailable,
                     CategoryId = dto.CategoryId,
@@ -187,6 +188,23 @@ namespace Menulo.Application.Features.MenuItems.Services
                 .ToList();
 
             return groupedMenu;
+        }
+
+        public async Task<MenuItemDetailsDto?> GetByIdAsync(int menuItemId, CancellationToken ct = default)
+        {
+            var entity = await _menuItemRepo.GetQueryable()
+                .AsNoTracking()
+                .Include(m => m.Category)
+                .FirstOrDefaultAsync(r => r.ItemId == menuItemId, ct);
+
+            if (entity is null)
+            {
+                return null;
+            }
+
+            var dto = _mapper.Map<MenuItemDetailsDto>(entity);
+
+            return dto;
         }
     }
 }

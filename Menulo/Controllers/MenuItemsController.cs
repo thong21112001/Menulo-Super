@@ -2,6 +2,7 @@
 using Menulo.Application.Common.Interfaces;
 using Menulo.Application.Features.MenuItems.Dtos;
 using Menulo.Application.Features.MenuItems.Interfaces;
+using Menulo.Application.Features.Restaurants.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
@@ -74,6 +75,17 @@ namespace Menulo.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+        }
+
+        // API 3: Lấy dữ liệu để hiển thị cho view chi tiết và xóa
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<MenuItemDetailsDto>> Get(int id, CancellationToken ct)
+        {
+            var dto = await _service.GetByIdAsync(id, ct);
+
+            return dto is null
+                    ? NotFound()
+                    : Ok(dto);
         }
     }
 }

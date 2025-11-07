@@ -1,4 +1,5 @@
 ﻿using Menulo.Application.Features.MenuItems.Dtos;
+using Menulo.Application.Features.Restaurants.Dtos;
 
 namespace Menulo.Application.Features.MenuItems.Interfaces
 {
@@ -31,5 +32,10 @@ namespace Menulo.Application.Features.MenuItems.Interfaces
         /// đã được lọc, sắp xếp và nhóm theo danh mục.
         /// </summary>
         Task<List<MenuCategoryGroupDto>> GetMenuForCurrentUserAsync(CancellationToken ct = default);
+
+        /// <summary>
+        /// Lấy chi tiết món ăn hiện tại của nhà hàng
+        /// </summary>
+        Task<MenuItemDetailsDto?> GetByIdAsync(int menuItemId, CancellationToken ct = default);
     }
 }

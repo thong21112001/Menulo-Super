@@ -24,10 +24,17 @@ namespace Menulo.Application.Common.Mappings
                 .ForMember(dest => dest.CategoryName,
                            opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : string.Empty))
                 .ForMember(dest => dest.RestaurantName,
-                            opt => opt.MapFrom(src => src.Restaurant != null ? src.Restaurant.Name : string.Empty));
+                            opt => opt.MapFrom(src => src.Restaurant != null ? src.Restaurant.Name : string.Empty))
+                .ForMember(dest => dest.Description,
+                            opt => opt.MapFrom(src => src.Description ?? string.Empty));
 
             // Map DTO -> DTO (để DataTablesControllerBase hoạt động)
             CreateMap<MenuItemRowDto, MenuItemRowDto>();
+
+            // Map từ Entity -> DTO details (xem chi tiết món)
+            CreateMap<MenuItem, MenuItemDetailsDto>()
+                .ForMember(dest => dest.CategoryName,
+                           opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : string.Empty));
         }
     }
 }

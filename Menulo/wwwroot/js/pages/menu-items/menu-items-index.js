@@ -4,6 +4,14 @@
     const SELECTORS = Object.freeze({
         table: "#menuITable",
         metaXsrf: 'meta[name="xsrf-token"]',
+        detailsModal: "#menuIDetailsModal",
+        loading: "#menui-details-loading",
+        details: "#menui-details",
+        empty: "#menui-details-empty",
+        editLink: "#menui-edit-link",
+        btnDeleteInDetails: "#btn-delete-in-details",
+        logo: "#menui-logo",
+        logoEmpty: "#menui-logo-empty"
     });
 
     const STATE = { dt: null };
@@ -16,7 +24,15 @@
         if (includeContentType) headers["Content-Type"] = "application/json";
         return headers;
     };
-
+    const safeModal = (selector, options) => {
+        const el = q(selector);
+        if (!el) return null;
+        return bootstrap.Modal.getOrCreateInstance(el, options || { backdrop: "static" });
+    };
+    const setDetailField = (modalEl, key, value) => {
+        const t = modalEl.querySelector(`[data-field="${key}"]`);
+        if (t) t.textContent = value ?? "";
+    };
     // escape HTML để tránh XSS khi render description
     function escapeHtml(unsafe) {
         if (unsafe === null || unsafe === undefined) return "";
@@ -152,10 +168,71 @@
         }
     }
 
+    // --- Chi tiết (Details) ---
+    async function showDetailsById(id) {
+        const detailsModal = safeModal(SELECTORS.detailsModal);
+        const detailsModalEl = q(SELECTORS.detailsModal);
+        if (!detailsModal || !detailsModalEl) return;
+
+        STATE.currentId = String(id);
+
+        $(SELECTORS.loading).removeClass("d-none");
+        $(SELECTORS.details).addClass("d-none");
+        $(SELECTORS.empty).addClass("d-none");
+        $(SELECTORS.editLink).addClass("d-none").attr("href", "#");
+        $(SELECTORS.btnDeleteInDetails).addClass("d-none").removeAttr("data-id");
+
+        // reset logo
+        const logoEl = q(SELECTORS.logo);
+        const logoEmpty = q(SELECTORS.logoEmpty);
+        if (logoEl) { logoEl.src = ""; logoEl.classList.add("d-none"); }
+        if (logoEmpty) logoEmpty.classList.remove("d-none");
+
+        detailsModal.show();
+
+        try {
+            const res = await fetch(`/api/menuitems/${id}`, { headers: antiforgeryHeaders() });
+            if (!res.ok) throw new Error("Load detail failed");
+            const dto = await res.json();
+
+            setDetailField(detailsModalEl, "name", dto.itemName);
+            setDetailField(detailsModalEl, "description", dto.description ?? "—");
+            setDetailField(detailsModalEl, "price", formatPrice(dto.price) ?? "—");
+            setDetailField(detailsModalEl, "categoryName", dto.categoryName);
+
+            // Hình món (chỉ có ở Details)s
+            if (dto.imageData && logoEl && logoEmpty) {
+                let logoSrc = `/api/images/menuitems/${id}?w=400&h=300`;
+                logoEl.src = logoSrc;
+                // Thêm loading="lazy" vào thẻ img trong file .cshtml của modal nếu cần
+                logoEl.classList.remove("d-none");
+                logoEmpty.classList.add("d-none");
+            }
+
+            // Footer
+            $(SELECTORS.editLink).removeClass("d-none").attr("href", `/ds-mon-an/${id}/chinh-sua`);
+            $(SELECTORS.btnDeleteInDetails).removeClass("d-none").attr("data-id", String(id));
+            $(SELECTORS.loading).addClass("d-none");
+            $(SELECTORS.details).removeClass("d-none");
+        } catch (err) {
+            console.error(err);
+            $(SELECTORS.loading).addClass("d-none");
+            $(SELECTORS.empty).removeClass("d-none");
+        }
+    }
+
     function bindEvents() {
         // Chỉ bắt click trên nút toggle, tránh lọc thủ công trong tbody
         $(SELECTORS.table).on('click', '.toggle-availability-btn', handleToggleAvailability);
 
+        // mở chi tiết
+        document.addEventListener("click", (e) => {
+            const btn = e.target.closest(".btn-details");
+            if (!btn) return;
+            e.preventDefault();
+            const id = btn.getAttribute("data-id");
+            showDetailsById(id);
+        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
