@@ -17,6 +17,17 @@
         return headers;
     };
 
+    // escape HTML để tránh XSS khi render description
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return "";
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     function formatPrice(price) {
         if (price === null || price === undefined) return "Theo thời giá";
         if (price === 0) return "Miễn phí";
@@ -65,6 +76,15 @@
             renderers: {
                 // LƯU Ý: key phải lowercase để khớp data-type đã bị toLowerCase()
                 "price": (data) => formatPrice(data),
+
+                "description": (data) => {
+                    if (data === null || data === undefined) return ""; // hoặc return "—";
+                    // giới hạn độ dài hiển thị trong table để tránh phá layout
+                    const MAX = 60;
+                    const text = String(data);
+                    const trimmed = text.length > MAX ? text.slice(0, MAX).trim() + "…" : text;
+                    return `<span title="${escapeHtml(text)}">${escapeHtml(trimmed)}</span>`;
+                },
 
                 // CHỖ QUAN TRỌNG: dùng 'isavailable' (lowercase), không phải 'isAvailable'
                 "isavailable": (data) => {

@@ -106,7 +106,7 @@ namespace Menulo.Application.Features.MenuItems.Services
                 {
                     ItemId = dto.ItemId,
                     ItemName = dto.ItemName,
-                    Description = dto.Description,
+                    Description = dto.Description ?? "",
                     Price = dto.Price,
                     IsAvailable = dto.IsAvailable,
                     CategoryId = dto.CategoryId,
