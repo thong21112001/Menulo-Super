@@ -36,5 +36,27 @@ namespace Menulo.Controllers
                 return StatusCode(500);
             }
         }
+
+
+        [HttpGet("menuitems/{menuItemId:int}")]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+        [AllowAnonymous] // nếu menu cho khách bên ngoài truy cập (tuỳ flow), else giữ [Authorize]
+        public async Task<IActionResult> GetMenuItemImage(int menuItemId, [FromQuery] int? w, [FromQuery] int? h, CancellationToken ct)
+        {
+            try
+            {
+                var imageBytes = await _imageSvc.GetOrProcessMenuItemImageAsync(menuItemId, w, h, ct);
+                return File(imageBytes, "image/jpeg");
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+        }
+
     }
 }

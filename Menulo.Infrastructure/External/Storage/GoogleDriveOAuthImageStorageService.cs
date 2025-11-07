@@ -18,8 +18,11 @@ namespace Menulo.Infrastructure.External.Storage
         private readonly ITokenStore _store;
         private DriveService _drive = default!;
 
-        public GoogleDriveOAuthImageStorageService(IOptions<GoogleOAuthOptions> opt, ITokenStore store)
-        { _opt = opt.Value; _store = store; }
+        public GoogleDriveOAuthImageStorageService(IOptions<GoogleOAuthOptions> opt, 
+            ITokenStore store)
+        {
+            _opt = opt.Value; _store = store;
+        }
 
         private async Task EnsureDriveAsync()
         {
@@ -56,7 +59,8 @@ namespace Menulo.Infrastructure.External.Storage
             var meta = new Google.Apis.Drive.v3.Data.File
             {
                 Name = $"{logicalName}{Path.GetExtension(fileName)}",
-                Parents = new List<string> { folderId }
+                Parents = new List<string> { folderId },
+                MimeType = contentType // <-- đảm bảo Drive biết đây là image/jpeg, image/png, ...
             };
 
             var req = _drive.Files.Create(meta, content, contentType);
@@ -67,7 +71,8 @@ namespace Menulo.Infrastructure.External.Storage
 
             var created = req.ResponseBody!;
             await _drive.Permissions.Create(new Google.Apis.Drive.v3.Data.Permission { Type = "anyone", Role = "reader" }, created.Id).ExecuteAsync();
-            return $"https://drive.google.com/uc?id={created.Id}";
+            // Trả URL dạng export=download để lấy raw bytes dễ dàng
+            return $"https://drive.google.com/uc?export=download&id={created.Id}";
         }
 
         public async Task<string> UploadAndReplaceAsync(Stream content, string fileName, string contentType,

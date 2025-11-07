@@ -20,13 +20,22 @@
                 <div class="col-lg-2 col-md-4 col-6 mb-2">
                     <div class="card shadow-sm">
 
-                        @if (!string.IsNullOrEmpty(item.ImageUrl))
-                        {
-                            <div class="img-container">
-                                <img src="@(item.ImageUrl ?? "/images/image.png")"
-                                     class="img-fluid" alt="@item.ItemName" loading="lazy">
-                            </div>
-                        }
+                        @* Luôn render container để layout không nhảy khi có/không có ảnh *@
+                        <div class="img-container">
+                            @{
+                                // Nếu DTO đã đặt ImageUrl là proxy (ví dụ: "/api/images/menuitems/123?w=400&h=300")
+                                // thì dùng thẳng item.ImageUrl; nếu null/empty -> dùng placeholder
+                                var imgSrc = string.IsNullOrWhiteSpace(item.ImageUrl)
+                                ? Url.Content("~/images/image.png")
+                                : Url.Content(item.ImageUrl);
+                            }
+                            <img src="@imgSrc"
+                                 class="img-fluid"
+                                 alt="@(!string.IsNullOrWhiteSpace(item.ItemName) ? item.ItemName : "Ảnh món")"
+                                 loading="lazy"
+                                 decoding="async"
+                                 onerror="this.onerror=null;this.src='@Url.Content("~/images/image.png")';" />
+                        </div>
 
                         <div class="card-body">
                             <h5 class="card-title">@item.ItemName</h5>
