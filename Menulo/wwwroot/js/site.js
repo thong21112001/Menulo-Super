@@ -1,4 +1,6 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+    let lastInner = { w: window.innerWidth, h: window.innerHeight };
+
     // --- Helper adjust DataTables: cải thiện và tối ưu hóa ---
     function debounce(func, wait = 200) {
         let timeout;
@@ -8,25 +10,45 @@
         };
     }
 
+    function shouldAdjust() {
+        const dx = Math.abs(window.innerWidth - lastInner.w);
+        const dy = Math.abs(window.innerHeight - lastInner.h);
+        // chỉ adjust nếu thay đổi lớn hơn ngưỡng (px) — điều chỉnh threshold nếu cần
+        const THRESH = 40;
+        if (dx > THRESH || dy > THRESH) {
+            lastInner.w = window.innerWidth;
+            lastInner.h = window.innerHeight;
+            return true;
+        }
+        return false;
+    }
+
     function adjustTables() {
         $('.dataTable').each(function () {
-            const table = $(this).DataTable();
-            if (table && $.fn.DataTable.isDataTable(this)) {
-                // Force recalculation với timeout để đảm bảo DOM đã render xong
-                setTimeout(() => {
-                    table.columns.adjust();
-                    table.draw();
+            // guard: nếu chưa init DataTable thì skip
+            if (!$.fn.DataTable.isDataTable(this)) return;
 
-                    // Responsive recalc nếu có
+            const table = $(this).DataTable();
+            try {
+                // Force recalculation nhưng KHÔNG draw() — draw() sẽ gọi lại AJAX trên serverSide
+                // chỉ adjust columns + responsive recalc nếu cần
+                setTimeout(() => {
+                    table.columns.adjust(); // chỉ cần adjust
                     if (table.responsive && typeof table.responsive.recalc === 'function') {
                         table.responsive.recalc();
                     }
                 }, 100);
+            } catch (err) {
+                console.warn('adjustTables error', err);
             }
         });
     }
 
-    const adjustTablesDebounced = debounce(adjustTables, 150);
+
+    const adjustTablesDebounced = debounce(() => {
+        if (shouldAdjust()) adjustTables();
+    }, 150);
+
 
     // Event listeners cho resize tables
     window.addEventListener('resize', adjustTablesDebounced);

@@ -52,7 +52,13 @@
 
     // --- DataTables ---
     function initTable() {
-        //
+        const $tbl = $(SELECTORS.table);
+        if ($.fn.dataTable.isDataTable($tbl)) {
+            console.warn('DataTable already initialized, skip init.');
+            STATE.dt = $tbl.DataTable();
+            return;
+        }
+
         STATE.dt = window.initDataTable(SELECTORS.table, {
             ajaxUrl: "/api/sales/datatable",  // <<< endpoint Sale API
             renderers: {

@@ -37,6 +37,13 @@
 
     // --- DataTables ---
     function initTable() {
+        const $tbl = $(SELECTORS.table);
+        if ($.fn.dataTable.isDataTable($tbl)) {
+            console.warn('DataTable already initialized, skip init.');
+            STATE.dt = $tbl.DataTable();
+            return;
+        }
+
         // ajaxUrl trỏ tới endpoint DataTables của Categories
         STATE.dt = window.initDataTable(SELECTORS.table, {
             ajaxUrl: "/api/categories/datatable",
