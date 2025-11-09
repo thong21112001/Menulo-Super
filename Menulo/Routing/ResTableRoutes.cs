@@ -10,6 +10,7 @@ namespace Menulo.Routing
             options.Conventions.AddPageRoute("/RestaurantTables/Index", "ds-ban");
             options.Conventions.AddPageRoute("/RestaurantTables/Create", "ds-ban/tao-moi");
             options.Conventions.AddPageRoute("/RestaurantTables/Edit", "ds-ban/{id:int}/chinh-sua");
+            options.Conventions.AddPageRoute("/TableOrders/Index", "theo-doi-ban");
         }
     }
 }

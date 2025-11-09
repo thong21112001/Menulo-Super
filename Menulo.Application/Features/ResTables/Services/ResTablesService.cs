@@ -152,5 +152,45 @@ namespace Menulo.Application.Features.ResTables.Services
 
             return query;
         }
+
+        public async Task<List<TableStatusDto>> GetTableStatusForCurrentUserAsync(CancellationToken ct = default)
+        {
+            // 1. Lấy RestaurantId của Admin (Bảo mật)
+            var restaurantId = _currentUser.RestaurantId
+                ?? throw new UnauthorizedAccessException("Người dùng không được gán cho nhà hàng nào.");
+
+            // 2. Query dữ liệu từ DB với Include Orders và ItemsTmps
+            var tables = await _repo.GetQueryable()
+                .Where(t => t.RestaurantId == restaurantId)
+                .Include(t => t.Orders.Where(o => o.Status == "Pending")) // Chỉ Include đơn "Pending"
+                    .ThenInclude(o => o.OrderItems)
+                .Include(t => t.ItemsTmps) // Đơn tạm
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            // 3. Map (ánh xạ) sang DTO
+            return tables.Select(t =>
+            {
+                // Lấy đơn hàng "Pending" (chỉ có 1 hoặc 0 vì đã lọc ở Include)
+                var pendingOrder = t.Orders.FirstOrDefault(o => o.Status == "Pending");
+
+                // Tính toán
+                decimal totalBeforeDiscount = pendingOrder?.OrderItems.Sum(oi => oi.Quantity * oi.Price) ?? 0;
+                byte discount = pendingOrder?.Discount ?? 0;
+                decimal totalAmount = totalBeforeDiscount * (1 - (decimal)discount / 100);
+
+                return new TableStatusDto(
+                    TableId: t.TableId,
+                    Description: t.Description ?? "Unknown",
+                    HasOrder: pendingOrder != null,
+                    TotalQuantity: pendingOrder?.OrderItems.Sum(oi => oi.Quantity) ?? 0,
+                    TotalAmount: totalAmount,
+                    HasPendingOrder: t.ItemsTmps.Any(),
+                    PendingTotalQuantity: t.ItemsTmps.Sum(i => i.Quantity)
+                );
+            })
+            .OrderByDescending(t => t.HasOrder || t.HasPendingOrder)
+            .ToList();
+        }
     }
 }

@@ -83,6 +83,7 @@
             </li>
         }
 
+        
         <!-- Role: Sale -->
         @if (User.IsInRole("sale"))
         {
@@ -94,13 +95,14 @@
             </li>
         }
 
+        
         <!-- Role: Admin (Chủ nhà hàng) -->
         @if (User.IsInRole("admin"))
         {
             <li class="nav-item">
-                <a class="nav-link @(IsActive("/Statistics") ? "active" : "")" href="/Statistics/Index" title="Thống kê">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span class="nav-link-text">Thống kê</span>
+                <a class="nav-link @(IsActive("/theo-doi-ban") ? "active" : "")" href="/theo-doi-ban" title="Theo dõi bàn">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span class="nav-link-text">Theo dõi bàn</span>
                 </a>
             </li>
 
@@ -112,6 +114,7 @@
             </li>
         }
 
+       
         <!-- Role: Superadmin hoặc Admin (Menu cha) -->
         @if (User.IsInRole("superadmin") || User.IsInRole("admin"))
         {
@@ -151,6 +154,18 @@
                         </li>
                     </ul>
                 </div>
+            </li>
+        }
+
+        
+        <!-- Role: Admin (Chủ nhà hàng) -->
+        @if (User.IsInRole("admin"))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(IsActive("/Statistics") ? "active" : "")" href="/Statistics/Index" title="Thống kê">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="nav-link-text">Thống kê</span>
+                </a>
             </li>
         }
     </ul>

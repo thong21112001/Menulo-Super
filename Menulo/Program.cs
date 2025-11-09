@@ -3,6 +3,7 @@ using Menulo.Application;
 using Menulo.Configuration;
 using Menulo.Infrastructure;
 using Menulo.Infrastructure.Data;
+using Menulo.Infrastructure.RealTime;
 using Menulo.Routing;
 using Menulo.Services;
 using System.Text.Json.Serialization;
@@ -89,6 +90,8 @@ app.ConfigureMiddleware(app.Environment);
 app.MapRazorPages();
 app.MapMenuloApi();
 app.MapControllers();
+
+app.MapHub<TableHub>("/tableHub");
 
 //11. Khởi tạo dữ liệu ban đầu
 DbInitializer.Initialize(app.Services);

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Menulo.Application.Features.ResTables.Dtos;
 using Menulo.Application.Features.ResTables.Interfaces;
+using Menulo.Application.Features.ResTables.Services;
 using Menulo.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -123,6 +124,22 @@ namespace Menulo.Controllers
             {
                 _logger.LogError(ex, "QR render failed for tableId {Id}", id);
                 return Problem("Internal error while generating QR.", statusCode: 500);
+            }
+        }
+
+        // API 5: Lấy danh sách bàn đặt kèm trạng thái (có order hay không, tổng tiền...)
+        [HttpGet("status")]
+        [ProducesResponseType(typeof(List<TableStatusDto>), 200)]
+        public async Task<IActionResult> GetTableStatus(CancellationToken ct)
+        {
+            try
+            {
+                var tables = await _service.GetTableStatusForCurrentUserAsync(ct);
+                return Ok(tables);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
         }
     }

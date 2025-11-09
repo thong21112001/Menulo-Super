@@ -42,6 +42,8 @@ namespace Menulo.Infrastructure
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+            services.AddSignalR();
+
             // Đăng ký Unit of Work, sẽ quản lý các repository
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

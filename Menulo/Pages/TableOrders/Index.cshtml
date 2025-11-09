@@ -1,0 +1,35 @@
+﻿@page
+@model Menulo.Pages.TableOrders.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions {
+    public string? GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(HttpContext)?.RequestToken;
+    }
+}
+
+@{
+    ViewData["Title"] = "Theo dõi bàn";
+}
+
+@section Styles {
+    <link href="~/css/pages/restaurant-tables/responsive-tables.css" rel="stylesheet" />
+    <link href="~/css/pages/restaurant-tables/badge-tables.css" rel="stylesheet" />
+}
+
+<div class="container">
+    <div id="loading-spinner" class="d-flex justify-content-center my-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div id="table-container" class="row d-none">
+    </div>
+</div>
+
+@section Scripts {
+    <meta name="xsrf-token" content="@GetAntiXsrfRequestToken()" />
+    <script src="~/js/pages/restaurant-tables/show-tables-irl.js"></script>
+}

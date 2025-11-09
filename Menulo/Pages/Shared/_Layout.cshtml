@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿﻿@{
+    // Lấy restaurantId từ Claims để tạo biến restaurantId cho js toàn cục
+    var restaurantIdClaim = User.Claims.FirstOrDefault(c => c.Type == "RestaurantId");
+    var restaurantId = restaurantIdClaim?.Value;
+}
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
     <meta charset="utf-8" />
@@ -34,7 +39,7 @@
     @await RenderSectionAsync("Styles", required: false)
 
 </head>
-<body>
+<body data-restaurant-id="@restaurantId">
     <!-- Sidebar -->
     <partial name="_Sidebar" />
 
@@ -65,6 +70,14 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SignalR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.9/signalr.min.js"></script>
+    <script>
+        const RESTAURANT_ID = document.body.dataset.restaurantId;
+    </script>
+    <script src="~/js/pages/shared/hub-client.js"></script>
+    <script src="~/js/pages/shared/global-notifications.js"></script>
 
     <!-- Js mặc định tự viết -->
     <script src="~/js/site.js" asp-append-version="true"></script>

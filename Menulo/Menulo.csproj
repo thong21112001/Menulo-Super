@@ -35,4 +35,10 @@
     <ProjectReference Include="..\Menulo.Infrastructure\Menulo.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\sounds\sound.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
