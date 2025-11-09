@@ -163,28 +163,31 @@ namespace Menulo.Application.Features.MenuItems.Services
 
             // 5. Nhóm (Group) và Map (ánh xạ) trong bộ nhớ
             var groupedMenu = allItems
-                .GroupBy(item => item.Category)
-                .Select(group => new MenuCategoryGroupDto(
-                    CategoryId: group.Key!.CategoryId,
-                    CategoryName: group.Key.CategoryName,
-                    CategoryPriority: group.Key.Priority,
-                    Items: group.Select(item =>
-                    {
-                        // Nếu item.ImageData != null -> build proxy-url tới endpoint ImagesController
-                        // Có thể điều chỉnh w/h tuỳ breakpoint (ví dụ: 400x300 cho thumbnails)
-                        string? imageProxyUrl = string.IsNullOrWhiteSpace(item.ImageData)
+                .GroupBy(item => item.CategoryId)
+                .Select(group => {
+                    var categoryInfo = group.First().Category;
+
+                    return new MenuCategoryGroupDto(
+                        CategoryId: categoryInfo!.CategoryId,
+                        CategoryName: categoryInfo.CategoryName,
+                        CategoryPriority: categoryInfo.Priority,
+                        Items: group.Select(item =>
+                        {
+                            string? imageProxyUrl = string.IsNullOrWhiteSpace(item.ImageData)
                             ? null
                             : $"/api/images/menuitems/{item.ItemId}?w=400&h=300";
 
-                        // Giữ constructor hiện tại (thay imageData bằng proxy url)
-                        return new MenuItemCardDto(
-                            item.ItemId,
-                            item.ItemName,
-                            item.Price,
-                            imageProxyUrl
-                        );
-                    }).ToList()
-                ))
+                            return new MenuItemCardDto(
+                                item.ItemId,
+                                item.ItemName,
+                                item.Price,
+                                imageProxyUrl
+                            );
+                        }).ToList()
+                    );
+                })
+                .OrderBy(g => g.CategoryPriority)
+                .ThenBy(g => g.CategoryName)
                 .ToList();
 
             return groupedMenu;
