@@ -81,9 +81,9 @@ Liên hệ: **quangthong211101@gmail.com**
 
 | Mục | Thông tin |
 |-----|------------|
-| **Tác giả** | Dev lor |
-| **Email** | menulo.dev@proton.me |
-| **Năm phát hành** | 2025 |
+| **Tác giả** | thong21112001 |
+| **Email** | quangthong211101@gmail.com |
+| **Năm phát hành** | 10/2025 |
 | **Phiên bản .NET** | .NET 8 LTS |
 | **Giấy phép** | Phi thương mại (Non-Commercial License) |
 
