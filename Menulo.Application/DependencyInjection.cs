@@ -3,6 +3,8 @@ using Menulo.Application.Features.Categories.Interfaces;
 using Menulo.Application.Features.Categories.Services;
 using Menulo.Application.Features.MenuItems.Interfaces;
 using Menulo.Application.Features.MenuItems.Services;
+using Menulo.Application.Features.Orders.Interfaces;
+using Menulo.Application.Features.Orders.Services;
 using Menulo.Application.Features.ResTables.Interfaces;
 using Menulo.Application.Features.ResTables.Services;
 using Menulo.Application.Features.Restaurants.Interfaces;
@@ -29,6 +31,12 @@ namespace Menulo.Application
             services.AddScoped<IResTablesService, ResTablesService>();
             services.AddScoped<ISaleService, SaleService>();
             services.AddScoped<IMenuItemsService, MenuItemsService>();
+
+            // Toàn bộ phần Orders và TableStatus
+            services.AddScoped<ITableStatusService, TableStatusService>();
+            services.AddScoped<ITmpCartService, TmpCartService>();
+            services.AddScoped<IOrdersService, OrdersService>();
+            services.AddScoped<ITableOpsService, TableOpsService>();
 
             return services;
         }
