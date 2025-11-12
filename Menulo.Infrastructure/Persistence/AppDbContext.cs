@@ -18,7 +18,7 @@ namespace Menulo.Infrastructure.Persistence
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
         public DbSet<ItemsTmp> ItemsTmps => Set<ItemsTmp>();
-
+        public DbSet<OrderHistory> OrderHistorys => Set<OrderHistory>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -187,6 +187,29 @@ namespace Menulo.Infrastructure.Persistence
                 // Chống trùng 1 món nhiều dòng trên cùng bàn
                 cfg.HasIndex(e => new { e.TableId, e.ItemId }).IsUnique();
             });
+
+
+            // =============== OrderHistory (phân biệt từng lần gọi) ===============
+            b.Entity<OrderHistory>().ToTable("OrderHistorys");
+            b.Entity<OrderHistory>()
+                .HasIndex(h => new { h.OrderId, h.RoundNo })
+                .HasDatabaseName("UQ_OrderHistory_Order_Round")
+                .IsUnique();
+
+            b.Entity<OrderItem>()
+                .HasOne(oi => oi.OrderHistory)
+                .WithMany(h => h.OrderItems)
+                .HasForeignKey(oi => oi.OrderHistoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<OrderItem>()
+                .HasIndex(oi => oi.OrderHistoryId)
+                .HasDatabaseName("IX_OrderItems_OrderHistoryId");
+
+            b.Entity<OrderItem>()
+                .HasIndex(oi => new { oi.OrderId, oi.ItemId, oi.OrderHistoryId })
+                .HasDatabaseName("UQ_OrderItem_Order_Item_History")
+                .IsUnique();
         }
     }
 }

@@ -615,7 +615,7 @@ function renderTables(tables) {
 
         // 2. Tạo thẻ <a>
         const cardLink = document.createElement('a');
-        cardLink.href = `/Order/Details?tableId=${table.tableId}`; // (Kiểm tra lại URL này)
+        cardLink.href = `/TableOrders/Details?tableId=${table.tableId}`; // (Kiểm tra lại URL này)
         cardLink.dataset.tableId = table.tableId;
         cardLink.className = 'text-decoration-none';
 

@@ -1,0 +1,43 @@
+﻿<!-- Modal Thêm Nhiều Món -->
+<div class="modal fade" id="addItemsBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm món</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalTableId" value="">
+                <div class="mb-2">
+                    <select class="form-select" id="batchItemSelect">
+                        <option value="" disabled selected>-- Chọn món --</option>
+                        @foreach (var item in Model.AvailableItems)
+                        {
+                            <option value="@item.ItemId">
+                                @(item.ItemName.Length > 30 ? item.ItemName.Substring(0, 20) + "…" : item.ItemName) - @item.DisplayPrice
+                            </option>
+                        }
+                    </select>
+                </div>
+                <button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">Thêm món</button>
+
+                <table class="table table-sm" id="batchItemsTable">
+                    <thead>
+                        <tr>
+                            <th>Món</th>
+                            <th style="width:80px">Số lượng</th>
+                            <th style="width:40px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Các dòng sẽ thêm động -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="sendBatch()">Hoàn thành</button>
+            </div>
+        </div>
+    </div>
+</div>s

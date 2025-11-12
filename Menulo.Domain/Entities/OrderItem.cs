@@ -12,8 +12,12 @@
 
         public decimal Price { get; set; }
 
+        public int OrderHistoryId { get; set; }
+
         public MenuItem? Item { get; set; } = null!;
 
         public Order Order { get; set; } = null!;
+
+        public OrderHistory OrderHistory { get; set; } = null!;
     }
 }
