@@ -14,5 +14,6 @@ namespace Menulo.Application.Features.Orders.Interfaces
         Task UpdateItemPriceAsync(int orderId, int itemId, decimal newPrice, CancellationToken ct = default);
         Task UpdateDiscountAsync(int orderId, byte discount, CancellationToken ct = default);
         Task<OrderViewDto?> GetAsync(int orderId, CancellationToken ct = default);
+        Task AddItemsByStaffAsync(int tableId, AddOrderItemsListRequest req, string? staffUserId, CancellationToken ct = default);
     }
 }

@@ -1,4 +1,27 @@
 ﻿@page
 @model Menulo.Pages.TableOrders.DetailsModel
 @{
+    ViewData["Title"] = "Chi tiết bàn";
+}
+
+@section Styles {
+}
+
+<div class="mb-3">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addItemsBatchModal"
+            onclick="setOrderId()">
+        Thêm món
+    </button>
+    <a asp-page="./Index" class="btn btn-secondary">
+        Quay lại
+    </a>
+</div>
+
+<!-- Modal dùng để thêm món -->
+<partial name="_DetailsPartial" />
+
+@section Scripts {
+    <!-- Các tính năng của trang -->
+    <script src="~/js/pages/order-details/load-menu-dropdown.js"></script>
+    <script src="~/js/pages/order-details/batch-add-items.js"></script>
 }

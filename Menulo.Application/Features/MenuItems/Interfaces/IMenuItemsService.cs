@@ -37,5 +37,10 @@ namespace Menulo.Application.Features.MenuItems.Interfaces
         /// Lấy chi tiết món ăn hiện tại của nhà hàng
         /// </summary>
         Task<MenuItemDetailsDto?> GetByIdAsync(int menuItemId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Lấy danh sách món ăn đơn giản cho dropdown
+        /// </summary>
+        Task<IReadOnlyList<MenuSimpleDto>> GetSimpleAsync(int restaurantId, CancellationToken ct = default);
     }
 }

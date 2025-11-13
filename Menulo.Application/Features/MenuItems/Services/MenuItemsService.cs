@@ -209,5 +209,20 @@ namespace Menulo.Application.Features.MenuItems.Services
 
             return dto;
         }
+
+        public async Task<IReadOnlyList<MenuSimpleDto>> GetSimpleAsync(int restaurantId, CancellationToken ct = default)
+        {
+            return await _uow.Repository<MenuItem>().GetQueryable()
+                .AsNoTracking()
+                .Where(mi => mi.RestaurantId == restaurantId && !mi.IsDeleted && mi.IsAvailable)
+                .OrderBy(mi => mi.ItemName)
+                .Select(mi => new MenuSimpleDto
+                {
+                    ItemId = mi.ItemId,
+                    ItemName = mi.ItemName,
+                    Price = mi.Price
+                })
+                .ToListAsync(ct);
+        }
     }
 }
